@@ -25,6 +25,6 @@ public class Card
     Energy = source.Energy;
     Parameters = source.Parameters;
     Effect = CardUtility.CardLangToObject(source.Effect);
-    Debug.Log(CardUtility.JsonExpressionToString(Effect));
+    // Debug.Log(CardUtility.JsonExpressionToString(Effect));
   }
 }
