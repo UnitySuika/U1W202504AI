@@ -12,11 +12,13 @@ public class CardStack
 
   public Card ShowTop()
   {
+    if (cards.Count == 0) return null;
     return cards.Last.Value;
   }
 
   public Card PickUpTop()
   {
+    if (cards.Count == 0) return null;
     Card card = cards.Last.Value;
     cards.RemoveLast();
     return card;

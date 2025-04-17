@@ -17,8 +17,11 @@ public class Battle
 
   public Turns Turn { get; private set; }
 
+  public List<Card> Hand { get; private set; }
+
   public Battle(EnemySource[] enemySources, int minEnemyNumber, int maxEnemyNumber, Deck deck)
   {
+    Hand = new List<Card>();
     Enemies = new List<Enemy>();
     int enemyNumber = Random.Range(minEnemyNumber, maxEnemyNumber + 1);
     for (int i = 0; i < enemyNumber; ++i)
@@ -34,5 +37,18 @@ public class Battle
     Energy = 0;
 
     Turn = Turns.Player;
+  }
+
+  public void SetEnergy(int value)
+  {
+    Energy = value;
+  }
+
+  public Card DealCard()
+  {
+    if (CStack.ShowTop() == null) return null;
+    Card dealed = CStack.PickUpTop();
+    Hand.Add(dealed);
+    return dealed;
   }
 }

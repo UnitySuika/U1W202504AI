@@ -9,5 +9,7 @@ public class CardSource : ScriptableObject
 
   public Card.Parameter[] Parameters;
 
-  public string Effect;
+  public string EffectDescription;
+
+  public string EffectCLANG;
 }

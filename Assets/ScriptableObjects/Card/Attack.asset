@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 279d27ee54c1bd24bb954586d9e1f040, type: 3}
   m_Name: Attack
   m_EditorClassIdentifier: 
-  Id: ATK
-  Energy: 0
+  Id: "\u653B\u6483\u30AB\u30FC\u30C9"
+  Energy: 1
   Parameters: []
-  Effect: "if ( Player_Hp > 10 ) then ( attack ( ( card_exist_number ( \"\u30B9\u30C8\u30E9\u30A4\u30AF\"
-    ) ) * 3 ) )"
+  EffectDescription: "\u6575\u306B5\u306E\u30C0\u30E1\u30FC\u30B8\u3092\u4E0E\u3048\u308B"
+  EffectCLANG: 

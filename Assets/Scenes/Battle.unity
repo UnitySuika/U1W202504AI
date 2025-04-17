@@ -191,6 +191,58 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &397715241
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 397715242}
+  - component: {fileID: 397715243}
+  m_Layer: 5
+  m_Name: HandView
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &397715242
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 397715241}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1046144844}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -100, y: -390}
+  m_SizeDelta: {x: 1000, y: 300}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &397715243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 397715241}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18069aae52b9c2542a225c94606167ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  handInterval: 240
+  handPosY: 0
+  cardViewPrefab: {fileID: 1679680836772058936, guid: dcbc7977afc1a7f488bd78538bc5e5a4, type: 3}
+  cardViewParent: {fileID: 397715242}
 --- !u!1 &799783133
 GameObject:
   m_ObjectHideFlags: 0
@@ -361,6 +413,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 799783134}
+  - {fileID: 397715242}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -498,6 +551,13 @@ MonoBehaviour:
   enemyViewsInterval: 300
   enemyViewsPosY: 200
   enemyViewsParent: {fileID: 1046144844}
+  handView: {fileID: 397715243}
+  initialCardSources:
+  - {fileID: 11400000, guid: 5fbda37e4837ece4dbdefde9ade43575, type: 2}
+  - {fileID: 11400000, guid: d96a92f94c4eb934e91a97c623726328, type: 2}
+  - {fileID: 11400000, guid: 5fbda37e4837ece4dbdefde9ade43575, type: 2}
+  - {fileID: 11400000, guid: d96a92f94c4eb934e91a97c623726328, type: 2}
+  - {fileID: 11400000, guid: 5fbda37e4837ece4dbdefde9ade43575, type: 2}
 --- !u!4 &1865677438
 Transform:
   m_ObjectHideFlags: 0
