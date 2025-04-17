@@ -9,6 +9,14 @@ public class Battle
 
   public int Energy { get; private set; }
 
+  public enum Turns
+  {
+    Player,
+    Enemy,
+  }
+
+  public Turns Turn { get; private set; }
+
   public Battle(EnemySource[] enemySources, int minEnemyNumber, int maxEnemyNumber, Deck deck)
   {
     Enemies = new List<Enemy>();
@@ -24,5 +32,7 @@ public class Battle
     CStack.Shuffle();
 
     Energy = 0;
+
+    Turn = Turns.Player;
   }
 }
