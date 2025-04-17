@@ -7,6 +7,8 @@ public class Battle
 
   public CardStack CStack { get; private set; }
 
+  public int Energy { get; private set; }
+
   public Battle(EnemySource[] enemySources, int minEnemyNumber, int maxEnemyNumber, Deck deck)
   {
     Enemies = new List<Enemy>();
@@ -19,5 +21,8 @@ public class Battle
     }
 
     CStack = new CardStack(deck);
+    CStack.Shuffle();
+
+    Energy = 0;
   }
 }

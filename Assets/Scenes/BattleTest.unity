@@ -247,6 +247,7 @@ MonoBehaviour:
   enemySources:
   - {fileID: 11400000, guid: 3bcb725601d5a134395428097cc8993b, type: 2}
   - {fileID: 11400000, guid: 0d02a1485805122439816a71d1a23155, type: 2}
+  cardSource: {fileID: 11400000, guid: 5fbda37e4837ece4dbdefde9ade43575, type: 2}
 --- !u!4 &1097399577
 Transform:
   m_ObjectHideFlags: 0
