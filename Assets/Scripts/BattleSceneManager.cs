@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class BattleSceneManager : MonoBehaviour
 {
@@ -32,6 +33,11 @@ public class BattleSceneManager : MonoBehaviour
   
   [SerializeField]
   private CardSource[] initialCardSources;
+
+  [SerializeField]
+  private PlayArea playArea;
+
+  public PlayArea BattlePlayArea => playArea;
 
   private Battle battle;
 
@@ -66,9 +72,13 @@ public class BattleSceneManager : MonoBehaviour
     {
       Card card = battle.DealCard();
       if (card == null) break;
-      handView.AddCard(card);
-      await UniTask.Delay(1000, cancellationToken: token);
+      await handView.AddCard(card, token);
       token.ThrowIfCancellationRequested();
+    }
+    
+    foreach (CardView cardView in handView.CardViews)
+    {
+      cardView.Validate();
     }
   }
 
@@ -83,8 +93,9 @@ public class BattleSceneManager : MonoBehaviour
     BattleMain(this.GetCancellationTokenOnDestroy()).Forget();
   }
 
-  public void OnClickCard()
+  public void OnPlayCard(Card card)
   {
-    Debug.Log("クリックされた");
+    card.PlayEffect();
+    handView.RemoveCard(card, this.GetCancellationTokenOnDestroy()).Forget();
   }
 }

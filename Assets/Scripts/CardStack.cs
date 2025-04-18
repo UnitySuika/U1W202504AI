@@ -40,7 +40,7 @@ public class CardStack
       {
         eraseTarget = eraseTarget.Next;
       }
-      nextCards.AddLast(cards.Last.Value);
+      nextCards.AddLast(eraseTarget.Value);
       cards.Remove(eraseTarget);
     }
     cards = nextCards;

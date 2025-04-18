@@ -1,6 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
+using Cysharp.Threading.Tasks;
+using System.Threading;
 
 public class HandView : MonoBehaviour
 {
@@ -16,49 +19,72 @@ public class HandView : MonoBehaviour
   [SerializeField]
   private Transform cardViewParent;
 
-  private List<CardView> cardViews;
+  public List<CardView> CardViews;
 
   private BattleSceneManager battleSceneManager;
 
   public void Initialize(BattleSceneManager battleSceneManager)
   {
-    cardViews = new List<CardView>();
+    CardViews = new List<CardView>();
     this.battleSceneManager = battleSceneManager;
   }
 
-  public void AddCard(Card card)
+  public async UniTask AddCard(Card card, CancellationToken token)
   {
-    foreach (CardView cardView in cardViews)
-    {
-      cardView.GetComponent<RectTransform>().anchoredPosition += new Vector2(-handInterval / 2f, 0);
-    }
+    token = CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy()).Token;
+    
+    List<UniTask> tasks = new List<UniTask>();
+
     CardView added = Instantiate(cardViewPrefab, cardViewParent);
     added.Initialize(card, battleSceneManager);
-    cardViews.Add(added);
-    added.GetComponent<RectTransform>().anchoredPosition = new Vector2
-    (
-      -1 * handInterval * (cardViews.Count - 1) / 2f + handInterval * (cardViews.Count - 1),
-      handPosY
-    );
+    CardViews.Add(added);
+
+    for (int cv_i = 0; cv_i < CardViews.Count; ++cv_i)
+    {
+      Vector2 pos = new Vector2(
+        -1 * handInterval * (CardViews.Count - 1) / 2f + handInterval * cv_i,
+        handPosY
+      );
+      tasks.Add(CardViews[cv_i].SetPosition(pos, token));
+    }
+    
+    tasks.Add(added.MoveAlpha(0f, 1f, 0.25f, token));
+
+    await UniTask.WhenAll(tasks);
+    token.ThrowIfCancellationRequested();
   }
 
-  public void RemoveCard(Card card)
+  public async UniTask RemoveCard(Card card, CancellationToken token)
   {
-    bool isLaterCard = false;
-    for (int i = 0; i < cardViews.Count; ++i)
+    token = CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy()).Token;
+
+    List<UniTask> tasks = new List<UniTask>();
+
+    int removeAt = -1;
+
+    for (int cv_i = 0; cv_i < CardViews.Count; ++cv_i)
     {
-      if (cardViews[i].ViewCard == card)
+      if (CardViews[cv_i].ViewCard == card)
       {
-        isLaterCard = true;
-      }
-      else if (isLaterCard)
-      {
-        cardViews[i].GetComponent<RectTransform>().anchoredPosition -= new Vector2(handInterval / 2, 0);
-      }
-      else
-      {
-        cardViews[i].GetComponent<RectTransform>().anchoredPosition += new Vector2(handInterval / 2, 0);
+        removeAt = cv_i;
+        CardViews[removeAt].Erase(this.GetCancellationTokenOnDestroy()).Forget();
       }
     }
+
+    if (removeAt == -1) return;
+
+    CardViews.RemoveAt(removeAt);
+
+    for (int cv_i = 0; cv_i < CardViews.Count; ++cv_i)
+    {
+      Vector2 pos = new Vector2(
+        -1 * handInterval * (CardViews.Count - 1) / 2f + handInterval * cv_i,
+        handPosY
+      );
+      tasks.Add(CardViews[cv_i].SetPosition(pos, token));
+    }
+
+    await UniTask.WhenAll(tasks);
+    token.ThrowIfCancellationRequested();
   }
 }

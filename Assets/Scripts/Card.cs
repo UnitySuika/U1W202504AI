@@ -19,12 +19,20 @@ public class Card
 
   public JsonExpression Effect;
 
+  public int RandomNumber;
+
   public Card(CardSource source)
   {
     Source = source;
     Energy = source.Energy;
     Parameters = source.Parameters;
     Effect = CardUtility.CardLangToObject(source.EffectCLANG);
+    RandomNumber = Random.Range(0, 10);
     // Debug.Log(CardUtility.JsonExpressionToString(Effect));
+  }
+
+  public void PlayEffect()
+  {
+    Debug.Log(Source.EffectDescription);
   }
 }
