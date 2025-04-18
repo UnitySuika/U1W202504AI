@@ -37,8 +37,8 @@ public class HandView : MonoBehaviour
     cardViews.Add(added);
     added.GetComponent<RectTransform>().anchoredPosition = new Vector2
     (
-        -1 * handInterval * (cardViews.Count - 1) / 2f + handInterval * (cardViews.Count - 1),
-        handPosY
+      -1 * handInterval * (cardViews.Count - 1) / 2f + handInterval * (cardViews.Count - 1),
+      handPosY
     );
   }
 
