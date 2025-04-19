@@ -1,20 +1,36 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
+using static Enemy;
 
 [CreateAssetMenu(menuName = "ScriptableObject/Enemy")]
 public class EnemySource : ScriptableObject
 {
   public string Id;
 
-  public Enemy.Parameter[] Parameters;
+  public Parameter[] Parameters;
 
-  public Action<Battle> GenerateAI(Battle battle)
+  public Func<Battle, List<EnemyActionData>> GenerateAI()
   {
     if (Id == "ゴブリン")
     {
-      return battle =>
+      return static battle =>
       {
-
+        return new List<EnemyActionData>()
+        {
+          new EnemyActionData(EnemyActions.Attack, 5),
+        };
+      };
+    }
+    else if (Id == "スライム")
+    {
+      return static battle =>
+      {
+        return new List<EnemyActionData>()
+        {
+          new EnemyActionData(EnemyActions.Heal, 5),
+          new EnemyActionData(EnemyActions.Defend, 10),
+        };
       };
     }
     return null;

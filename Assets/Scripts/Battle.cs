@@ -19,8 +19,11 @@ public class Battle
 
   public List<Card> Hand { get; private set; }
 
-  public Battle(EnemySource[] enemySources, int minEnemyNumber, int maxEnemyNumber, Deck deck)
+  public Character MainCharacter { get; private set; }
+
+  public Battle(Character mainCharacter, EnemySource[] enemySources, int minEnemyNumber, int maxEnemyNumber, Deck deck)
   {
+    MainCharacter = mainCharacter;
     Hand = new List<Card>();
     Enemies = new List<Enemy>();
     int enemyNumber = Random.Range(minEnemyNumber, maxEnemyNumber + 1);
@@ -50,5 +53,13 @@ public class Battle
     Card dealed = CStack.PickUpTop();
     Hand.Add(dealed);
     return dealed;
+  }
+
+  public void SetNextEnemyActions()
+  {
+    foreach (Enemy enemy in Enemies)
+    {
+      enemy.SetNextActionData(this);
+    }
   }
 }

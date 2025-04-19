@@ -36,8 +36,16 @@ public class BattleSceneManager : MonoBehaviour
 
   [SerializeField]
   private PlayArea playArea;
+  
+  [SerializeField]
+  private CharacterView characterView;
+
+  [SerializeField]
+  private EnergyView energyView;
 
   public PlayArea BattlePlayArea => playArea;
+
+  public List<EnemyView> EnemyViews { get; private set; }
 
   private Battle battle;
 
@@ -48,23 +56,32 @@ public class BattleSceneManager : MonoBehaviour
     {
       deck.Add(new Card(cardSource));
     }
-    battle = new Battle(enemySources, minEnemyNumber, maxEnemyNumber, deck);
+
+    Character character = new Character("冒険者", 50);
+    
+    battle = new Battle(character, enemySources, minEnemyNumber, maxEnemyNumber, deck);
+
+    characterView.Set(character);
+    
+    EnemyViews = new List<EnemyView>();
     int en = battle.Enemies.Count;
     for (int i = 0; i < en; ++i)
     {
       EnemyView enemyView = Instantiate(enemyViewPrefab, enemyViewsParent);
-      enemyView.Initialize(battle.Enemies[i]);
+      enemyView.Set(battle.Enemies[i]);
       enemyView.GetComponent<RectTransform>().anchoredPosition = new Vector2
       (
         -1 * enemyViewsInterval * (en - 1) / 2f + enemyViewsInterval * i,
         enemyViewsPosY
       );
+      EnemyViews.Add(enemyView);
     }
   }
 
   private async UniTask PlayerTurnInitialize(CancellationToken token)
   {
     battle.SetEnergy(2);
+    energyView.Set(battle.Energy);
     await UniTask.Delay(1000, cancellationToken: token);
     token.ThrowIfCancellationRequested();
     handView.Initialize(this);
@@ -75,7 +92,15 @@ public class BattleSceneManager : MonoBehaviour
       await handView.AddCard(card, token);
       token.ThrowIfCancellationRequested();
     }
-    
+
+    battle.SetNextEnemyActions();
+
+    foreach (EnemyView enemyView in EnemyViews)
+    {
+      enemyView.SetActions();
+    }
+
+    // 操作可能にする
     foreach (CardView cardView in handView.CardViews)
     {
       cardView.Validate();

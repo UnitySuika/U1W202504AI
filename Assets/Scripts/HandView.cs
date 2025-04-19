@@ -18,8 +18,11 @@ public class HandView : MonoBehaviour
 
   [SerializeField]
   private Transform cardViewParent;
+  
+  [SerializeField]
+  private RectTransform cardViewParentMoving;
 
-  public List<CardView> CardViews;
+  public List<CardView> CardViews { get; set; }
 
   private BattleSceneManager battleSceneManager;
 
@@ -36,7 +39,7 @@ public class HandView : MonoBehaviour
     List<UniTask> tasks = new List<UniTask>();
 
     CardView added = Instantiate(cardViewPrefab, cardViewParent);
-    added.Initialize(card, battleSceneManager);
+    added.Initialize(card, battleSceneManager, cardViewParentMoving);
     CardViews.Add(added);
 
     for (int cv_i = 0; cv_i < CardViews.Count; ++cv_i)

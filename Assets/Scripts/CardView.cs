@@ -58,10 +58,13 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
   private bool isValid = false;
 
-  public void Initialize(Card card, BattleSceneManager battleSceneManager)
+  private RectTransform parentRectTransformMoving;
+
+  public void Initialize(Card card, BattleSceneManager battleSceneManager, RectTransform parentMoving)
   {
     rectTransform = GetComponent<RectTransform>();
     parentRectTransform = (RectTransform)rectTransform.parent;
+    parentRectTransformMoving = parentMoving;
     mainCamera = Camera.main;
 
     ViewCard = card;
@@ -136,6 +139,7 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
       if (Input.GetMouseButton(0))
       {
         // 掴み状態
+        rectTransform.SetParent(parentRectTransformMoving);
         RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRectTransform, Input.mousePosition, mainCamera, out Vector2 mousePos);
 
         rectTransform.anchoredPosition = mousePos;
@@ -152,6 +156,7 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
           rectTransform.DOAnchorPos(settedPos, 0.25f);
         }
         battleSceneManager.BattlePlayArea.Invalidate();
+        rectTransform.SetParent(parentRectTransform);
       }
     }
   }
