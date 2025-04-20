@@ -1,6 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,7 +13,7 @@ public class EnemyActionView : MonoBehaviour
   [Serializable]
   public class ActionKindImageSource
   {
-    public Enemy.EnemyActions EnemyAction;
+    public Enemy.EnemyActionTypes EnemyAction;
     public Sprite ImageSource;
   }
 
@@ -23,9 +26,26 @@ public class EnemyActionView : MonoBehaviour
   [SerializeField]
   private ActionKindImageSource[] actionKindImageSources;
 
+  [SerializeField]
+  private Image playImage;
+
+  public Enemy.EnemyActionData ActionData;
+
   public void Set(Enemy.EnemyActionData actionData)
   {
-    actionKindImage.sprite = Array.Find(actionKindImageSources, item => item.EnemyAction == actionData.EnemyAction).ImageSource;
+    ActionData = actionData;
+    actionKindImage.sprite = Array.Find(actionKindImageSources, item => item.EnemyAction == actionData.ActionType).ImageSource;
     actionValueText.text = actionData.Value.ToString();
+  }
+
+  public async UniTask Play(CancellationToken token)
+  {
+    CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
+
+    playImage.gameObject.SetActive(true);
+    await playImage.DOFade(1f, 0.25f).ToUniTask(cancellationToken: token);
+    token.ThrowIfCancellationRequested();
+    await playImage.DOFade(0f, 0.125f).ToUniTask(cancellationToken: token);
+    token.ThrowIfCancellationRequested();
   }
 }

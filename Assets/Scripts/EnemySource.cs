@@ -10,27 +10,25 @@ public class EnemySource : ScriptableObject
 
   public Parameter[] Parameters;
 
-  public Func<Battle, List<EnemyActionData>> GenerateAI()
+  public Func<Battle, Queue<EnemyActionData>> GenerateAI()
   {
     if (Id == "ゴブリン")
     {
       return static battle =>
       {
-        return new List<EnemyActionData>()
-        {
-          new EnemyActionData(EnemyActions.Attack, 5),
-        };
+        Queue<EnemyActionData> actions = new Queue<EnemyActionData>();
+        actions.Enqueue(new EnemyActionData(EnemyActionTypes.Attack, 5));
+        return actions;
       };
     }
     else if (Id == "スライム")
     {
       return static battle =>
       {
-        return new List<EnemyActionData>()
-        {
-          new EnemyActionData(EnemyActions.Heal, 5),
-          new EnemyActionData(EnemyActions.Defend, 10),
-        };
+        Queue<EnemyActionData> actions = new Queue<EnemyActionData>();
+        actions.Enqueue(new EnemyActionData(EnemyActionTypes.Heal, 5));
+        actions.Enqueue(new EnemyActionData(EnemyActionTypes.Defend, 10));
+        return actions;
       };
     }
     return null;

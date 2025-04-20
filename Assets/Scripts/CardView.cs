@@ -130,32 +130,69 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
   {
     if (!isValid) return;
 
-    if (isPointerOn)
+    if (isPointerOn && ViewCard.Energy <= battleSceneManager.CurrentBattle.Energy)
     {
       if (Input.GetMouseButtonDown(0))
       {
-        battleSceneManager.BattlePlayArea.Validate();
+        if (ViewCard.CardType == Card.CardTargetTypes.ForEnemy)
+        {
+          foreach (EnemyView enemyView in battleSceneManager.EnemyViews)
+          {
+            enemyView.Validate();
+          }
+        }
+        else if (ViewCard.CardType == Card.CardTargetTypes.Normal)
+        {
+          battleSceneManager.BattlePlayArea.Validate();
+        }
+        rectTransform.SetParent(parentRectTransformMoving);
       }
+      
       if (Input.GetMouseButton(0))
       {
         // 掴み状態
-        rectTransform.SetParent(parentRectTransformMoving);
         RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRectTransform, Input.mousePosition, mainCamera, out Vector2 mousePos);
 
         rectTransform.anchoredPosition = mousePos;
       }
+      
       if (Input.GetMouseButtonUp(0))
       {
         // 離す
         if (battleSceneManager.BattlePlayArea.IsPointerOn)
         {
-          battleSceneManager.OnPlayCard(ViewCard);
+          battleSceneManager.OnPlayCard(ViewCard, new Card.PlayedData(Card.PlayedData.PlayedTypes.Normal, null));
         }
         else
         {
-          rectTransform.DOAnchorPos(settedPos, 0.25f);
+          bool isEnemySelected = false;
+          foreach (EnemyView enemyView in battleSceneManager.EnemyViews)
+          {
+            if (enemyView.IsPointerOn)
+            {
+              isEnemySelected = true;
+              battleSceneManager.OnPlayCard(ViewCard, new Card.PlayedData(Card.PlayedData.PlayedTypes.Enemy, enemyView.TargetEnemy));
+            }
+          }
+
+          if (!isEnemySelected)
+          {
+            rectTransform.DOAnchorPos(settedPos, 0.25f);
+          }
         }
-        battleSceneManager.BattlePlayArea.Invalidate();
+        
+        if (ViewCard.CardType == Card.CardTargetTypes.ForEnemy)
+        {
+          foreach (EnemyView enemyView in battleSceneManager.EnemyViews)
+          {
+            enemyView.Invalidate();
+          }
+        }
+        else if (ViewCard.CardType == Card.CardTargetTypes.Normal)
+        {
+          battleSceneManager.BattlePlayArea.Invalidate();
+        }
+
         rectTransform.SetParent(parentRectTransform);
       }
     }

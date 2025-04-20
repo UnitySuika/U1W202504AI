@@ -7,6 +7,8 @@ public class CardSource : ScriptableObject
 
   public int Energy;
 
+  public Card.CardTargetTypes CardType;
+
   public Card.Parameter[] Parameters;
 
   public string EffectDescription;

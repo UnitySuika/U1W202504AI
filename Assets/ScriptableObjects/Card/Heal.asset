@@ -16,4 +16,4 @@ MonoBehaviour:
   Energy: 1
   Parameters: []
   EffectDescription: "HP\u309210\u56DE\u5FA9\u3059\u308B"
-  EffectCLANG: 
+  EffectCLANG: heal ( 10 )

@@ -17,4 +17,9 @@ public class Character
   {
     Hp = Mathf.Max(0, Hp - damageValue);
   }
+
+  public void Heal(int healValue)
+  {
+    Hp = Mathf.Min(MaxHp, Hp + healValue);
+  }
 }

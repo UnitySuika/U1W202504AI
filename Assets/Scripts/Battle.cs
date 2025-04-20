@@ -9,11 +9,20 @@ public class Battle
 
   public int Energy { get; private set; }
 
+  public enum States
+  {
+    Main,
+    Win,
+    Lose,
+  }
+
   public enum Turns
   {
     Player,
     Enemy,
   }
+
+  public States State { get; private set; }
 
   public Turns Turn { get; private set; }
 
@@ -23,6 +32,7 @@ public class Battle
 
   public Battle(Character mainCharacter, EnemySource[] enemySources, int minEnemyNumber, int maxEnemyNumber, Deck deck)
   {
+    State = States.Main;
     MainCharacter = mainCharacter;
     Hand = new List<Card>();
     Enemies = new List<Enemy>();
@@ -30,7 +40,7 @@ public class Battle
     for (int i = 0; i < enemyNumber; ++i)
     {
       EnemySource enemySource = enemySources[Random.Range(0, enemySources.Length)];
-      Enemy enemy = new Enemy(enemySource, this);
+      Enemy enemy = new Enemy(enemySource);
       Enemies.Add(enemy);
     }
 
@@ -39,7 +49,7 @@ public class Battle
 
     Energy = 0;
 
-    Turn = Turns.Player;
+    SetTurn(Turns.Player);
   }
 
   public void SetEnergy(int value)
@@ -55,11 +65,55 @@ public class Battle
     return dealed;
   }
 
+  public void InsertCard(Card card)
+  {
+    Hand.Remove(card);
+    CStack.InsertBottom(card);
+  }
+
   public void SetNextEnemyActions()
   {
     foreach (Enemy enemy in Enemies)
     {
       enemy.SetNextActionData(this);
+    }
+  }
+
+  public void UpdateStatus()
+  {
+    List<Enemy> nextEnemies = new List<Enemy>();
+    foreach (Enemy enemy in Enemies)
+    {
+      if (enemy.Hp > 0)
+      {
+        nextEnemies.Add(enemy);
+      }
+    }
+    Enemies = nextEnemies;
+  }
+
+  public void EvaluateState()
+  {
+    if (MainCharacter.Hp == 0)
+    {
+      State = States.Lose;
+    }
+    else if (Enemies.Count == 0)
+    {
+      State = States.Win;
+    }
+  }
+
+  public void SetTurn(Turns turn)
+  {
+    Turn = turn;
+  }
+
+  public void EnemyTurnStart()
+  {
+    foreach (Enemy enemy in Enemies)
+    {
+      enemy.AdvanceTurn();
     }
   }
 }
