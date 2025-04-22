@@ -42,6 +42,8 @@ public class HandView : MonoBehaviour
     added.Initialize(card, battleSceneManager, cardViewParentMoving);
     CardViews.Add(added);
     added.Invalidate();
+    
+    added.SetLove(card.LoveNumber);
 
     for (int cv_i = 0; cv_i < CardViews.Count; ++cv_i)
     {

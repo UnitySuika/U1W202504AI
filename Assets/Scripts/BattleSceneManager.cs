@@ -125,6 +125,7 @@ public class BattleSceneManager : MonoBehaviour
     {
       Card card = CurrentBattle.DealCard();
       if (card == null) break;
+      AudioManager.Instance.PlaySe("card_deal", false);
       await handView.AddCard(card, token);
       token.ThrowIfCancellationRequested();
     }
@@ -385,13 +386,14 @@ public class BattleSceneManager : MonoBehaviour
   {
     AudioManager.Instance.StopBgm();
 
-    for (int i = 0; i < CurrentBattle.Hand.Count; ++i)
+    int handNumber = CurrentBattle.Hand.Count;
+
+    for (int i = 0; i < handNumber; ++i)
     {
       CurrentBattle.InsertCard(CurrentBattle.Hand[0]);
     }
 
-    int handViewNumber = handView.CardViews.Count;
-    for (int i = 0; i < handViewNumber; ++i)
+    for (int i = 0; i < handNumber; ++i)
     {
       await handView.RemoveCard(handView.CardViews[0].ViewCard, false, token);
       token.ThrowIfCancellationRequested();

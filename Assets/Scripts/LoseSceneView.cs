@@ -22,6 +22,6 @@ public class LoseSceneView : MonoBehaviour
   {
     if (TransitionMotionManager.Instance.IsTransitioning) return;
     BattleInformation.Initialize();
-    TransitionMotionManager.Instance.PlayTransitionMotion("Battle", TransitionMotionManager.TransitionMotionTypes.FadeNormal).Forget();
+    TransitionMotionManager.Instance.PlayTransitionMotion("Battle", TransitionMotionManager.TransitionMotionTypes.Horizontal).Forget();
   }
 }

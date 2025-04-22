@@ -1506,7 +1506,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColor: {r: 0.49803922, g: 0.7465522, b: 0.99215686, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1639,7 +1639,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemySources:
   - {fileID: 11400000, guid: 0d02a1485805122439816a71d1a23155, type: 2}
-  - {fileID: 11400000, guid: 3bcb725601d5a134395428097cc8993b, type: 2}
   minEnemyNumber: 1
   maxEnemyNumber: 2
   enemyViewPrefab: {fileID: 5574205940035745138, guid: fefce3af1f8fe984db85c3e8f4e33ef8, type: 3}
@@ -1891,7 +1890,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColor: {r: 0.9490196, g: 0.99215686, b: 0.49803922, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:

@@ -49,7 +49,18 @@ public class CardStack
   public void ReturnToDeck()
   {
     BattleInformation.Deck = new Deck();
-    Debug.Log(cards.Count);
+
+    int c = 1;
+    LinkedListNode<Card> node = cards.First;
+
+    while (node != cards.Last)
+    {
+      node = node.Next;
+      ++c;
+    }
+
+    Debug.Log("ccc" + c);
+
     while (cards.Count > 0)
     {
       LinkedListNode<Card> cardNode = cards.First;
