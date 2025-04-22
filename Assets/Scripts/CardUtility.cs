@@ -99,19 +99,9 @@ public static class CardUtility
           next.Enqueue((je, "condition", phraseList[1]));
           next.Enqueue((je, "then", phraseList[3]));
         }
-        else if (phraseList[0].Count == 1 && phraseList[0][0] == "attack")
-        {
-          je.Elements.Add("type", new JsonExpression("attack"));
-          next.Enqueue((je, "value", phraseList[1]));
-        }
-        else if (phraseList[0].Count == 1 && phraseList[0][0] == "card_exist_number")
-        {
-          je.Elements.Add("type", new JsonExpression("card_exist_number"));
-          next.Enqueue((je, "value", phraseList[1]));
-        }
         else if (phraseList[1].Count == 1 && phraseList[1][0] == ">")
         {
-          je.Elements.Add("type", new JsonExpression("comparison"));
+          je.Elements.Add("type", new JsonExpression("comparison_greater"));
           next.Enqueue((je, "left", phraseList[0]));
           next.Enqueue((je, "right", phraseList[2]));
         }
@@ -121,15 +111,31 @@ public static class CardUtility
           next.Enqueue((je, "left", phraseList[0]));
           next.Enqueue((je, "right", phraseList[2]));
         }
+        // ここから関数群
+        else if (phraseList[0].Count == 1 && phraseList[0][0] == "attack")
+        {
+          je.Elements.Add("type", new JsonExpression("attack"));
+          next.Enqueue((je, "value", phraseList[1]));
+        }
+        else if (phraseList[0].Count == 1 && phraseList[0][0] == "heal")
+        {
+          je.Elements.Add("type", new JsonExpression("heal"));
+          next.Enqueue((je, "value", phraseList[1]));
+        }
+        else if (phraseList[0].Count == 1 && phraseList[0][0] == "card_exist_number")
+        {
+          je.Elements.Add("type", new JsonExpression("card_exist_number"));
+          next.Enqueue((je, "value", phraseList[1]));
+        }
         else
         {
-          je.Elements.Add("type", new JsonExpression("variable"));
+          je.Elements.Add("type", new JsonExpression("value"));
           je.Elements.Add("value", new JsonExpression(phraseList[0][0]));
         }
       }
       else
       {
-        je.Elements.Add("type", new JsonExpression("variable"));
+        je.Elements.Add("type", new JsonExpression("value"));
         je.Elements.Add("value", new JsonExpression(phraseList[0][0]));
       }
     }
