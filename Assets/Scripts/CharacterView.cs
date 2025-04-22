@@ -33,4 +33,20 @@ public class CharacterView : MonoBehaviour
 
     token.ThrowIfCancellationRequested();
   }
+
+  public async UniTask Heal(CancellationToken token)
+  {
+    CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
+
+    await transform.DOLocalRotate(new Vector3(0, 0, 360f), 0.5f)
+      .SetEase(Ease.OutSine)
+      .SetRelative()
+      .ToUniTask(cancellationToken: token);
+
+    token.ThrowIfCancellationRequested();
+
+    transform.localEulerAngles = new Vector3(0, 0, 360f);
+    
+    Set(chara);
+  }
 }

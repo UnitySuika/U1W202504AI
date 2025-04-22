@@ -41,6 +41,7 @@ public class HandView : MonoBehaviour
     CardView added = Instantiate(cardViewPrefab, cardViewParent);
     added.Initialize(card, battleSceneManager, cardViewParentMoving);
     CardViews.Add(added);
+    added.Invalidate();
 
     for (int cv_i = 0; cv_i < CardViews.Count; ++cv_i)
     {

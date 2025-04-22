@@ -123,6 +123,85 @@ public class BattleSceneManager : MonoBehaviour
     turnView.Set(CurrentBattle);
   }
 
+  public async UniTask PlayBattleEventQueue(BattleEventQueue beq, CancellationToken token)
+  {
+    while (beq.Events.Count > 0)
+    {
+      BattleEvent be = beq.Dequeue();
+      switch (be.Type)
+      {
+        case BattleEvent.EventTypes.CardPlayEffect:
+          break;
+        case BattleEvent.EventTypes.EnemyPlayAction:
+          EnemyView enemyView1 = null;
+          foreach (EnemyView view in EnemyViews)
+          {
+            if (view.TargetEnemy == be.TargetEnemies[0]) enemyView1 = view;
+          }
+          await enemyView1.StartAction(be.TargetAction, token);
+          token.ThrowIfCancellationRequested();
+          break;
+        case BattleEvent.EventTypes.CharacterDamage:
+          await characterView.ReceiveDamage(token);
+          token.ThrowIfCancellationRequested();
+          break;
+        case BattleEvent.EventTypes.CharacterHeal:
+          await characterView.Heal(token);
+          token.ThrowIfCancellationRequested();
+          break;
+        case BattleEvent.EventTypes.EnemyDamage:
+          EnemyView enemyView3 = null;
+          foreach (EnemyView view in EnemyViews)
+          {
+            if (view.TargetEnemy == be.TargetEnemies[0]) enemyView3 = view;
+          }
+          bool isDie = await enemyView3.ReceiveDamage(token);
+          if (isDie) 
+          {
+            EnemyViews.Remove(enemyView3);
+            Destroy(enemyView3.gameObject);
+          }
+          token.ThrowIfCancellationRequested();
+          break;
+        case BattleEvent.EventTypes.EnemyHeal:
+          EnemyView enemyView4 = null;
+          foreach (EnemyView view in EnemyViews)
+          {
+            if (view.TargetEnemy == be.TargetEnemies[0]) enemyView4 = view;
+          }
+          await enemyView4.Heal(token);
+          token.ThrowIfCancellationRequested();
+          break;
+        case BattleEvent.EventTypes.EnemyGetStatusEffect:
+          EnemyView enemyView5 = null;
+          foreach (EnemyView view in EnemyViews)
+          {
+            if (view.TargetEnemy == be.TargetEnemies[0]) enemyView5 = view;
+          }
+          await enemyView5.GetStatusEffect(be.TargetStatusEffects[0], token);
+          token.ThrowIfCancellationRequested();
+          break;
+        case BattleEvent.EventTypes.DecreaseEnergy:
+          energyView.Set(CurrentBattle.Energy);
+          break;
+        case BattleEvent.EventTypes.IncreaseEnergy:
+          energyView.Set(CurrentBattle.Energy);
+          break;
+        case BattleEvent.EventTypes.EndCardPlayEffect:
+          break;
+        case BattleEvent.EventTypes.EndEnemyPlayAction:
+          EnemyView enemyView2 = null;
+          foreach (EnemyView view in EnemyViews)
+          {
+            if (view.TargetEnemy == be.TargetEnemies[0]) enemyView2 = view;
+          }
+          await enemyView2.EndAction(token);
+          token.ThrowIfCancellationRequested();
+          break;
+      }
+    }
+  }
+
   private async UniTask BattleMain(CancellationToken token)
   {
     BattleInitialize();
@@ -139,14 +218,22 @@ public class BattleSceneManager : MonoBehaviour
         {
           if (CurrentBattle.Turn == Battle.Turns.Enemy) break;
           await UniTask.Yield(PlayerLoopTiming.Update, token);
+          token.ThrowIfCancellationRequested();
           continue;
         }
-
-        token.ThrowIfCancellationRequested();
         
-        playedCard.PlayEffect(CurrentBattle, playedData);
+        // 操作不能にする
+        foreach (CardView cardView in handView.CardViews)
+        {
+          cardView.Invalidate();
+        }
+        
+        BattleEventQueue beq = new BattleEventQueue();
+        playedCard.PlayEffect(CurrentBattle, playedData, beq);
 
-        UpdateViews();
+        await PlayBattleEventQueue(beq, token);
+
+        CurrentBattle.UpdateStatus();
 
         CurrentBattle.Hand.Remove(playedCard);
         CurrentBattle.CStack.InsertBottom(playedCard);
@@ -158,14 +245,17 @@ public class BattleSceneManager : MonoBehaviour
         CheckGameState();
 
         playedCard = null;
+        
+        // 操作可能にする
+        foreach (CardView cardView in handView.CardViews)
+        {
+          cardView.Validate();
+        }
 
         await UniTask.Yield(PlayerLoopTiming.Update, token);
         token.ThrowIfCancellationRequested();
       }
 
-
-      await UniTask.WaitUntil(() => CurrentBattle.Turn == Battle.Turns.Enemy, cancellationToken: token);
-      token.ThrowIfCancellationRequested();
       turnView.Set(CurrentBattle);
 
       int handNumber = CurrentBattle.Hand.Count;
@@ -185,7 +275,14 @@ public class BattleSceneManager : MonoBehaviour
       token.ThrowIfCancellationRequested();
 
       CurrentBattle.EnemyTurnStart();
-      UpdateViews();
+
+      foreach (EnemyView enemyView in EnemyViews)
+      {
+        for (int i = 0; i < enemyView.StatusEffectViews.Count; ++i)
+        {
+          await enemyView.UpdateStatusEffect(token);
+        }
+      }
       await UniTask.Delay(250, cancellationToken: token);
       token.ThrowIfCancellationRequested();
 
@@ -193,15 +290,9 @@ public class BattleSceneManager : MonoBehaviour
       {
         while (enemy.CanPlayAction())
         {
-          Enemy.EnemyActionData action = enemy.PlayAction(CurrentBattle);
-          foreach (EnemyView enemyView in EnemyViews)
-          {
-            if (enemyView.TargetEnemy == enemy)
-            {
-              await enemyView.PlayAction(characterView, token);
-              token.ThrowIfCancellationRequested();
-            }
-          }
+          BattleEventQueue beq = new BattleEventQueue();
+          Enemy.EnemyActionData action = enemy.PlayAction(CurrentBattle, beq);
+          await PlayBattleEventQueue(beq, token);
           if (CheckGameState()) return;
           token.ThrowIfCancellationRequested();
           await UniTask.Delay(500, cancellationToken: token);
@@ -218,6 +309,7 @@ public class BattleSceneManager : MonoBehaviour
     BattleMain(this.GetCancellationTokenOnDestroy()).Forget();
   }
 
+  /*
   private void UpdateViews()
   {
     CurrentBattle.UpdateStatus();
@@ -239,6 +331,7 @@ public class BattleSceneManager : MonoBehaviour
     EnemyViews = nextEnemyViews;
     characterView.Set(CurrentBattle.MainCharacter);
   }
+  */
 
   private bool CheckGameState()
   {

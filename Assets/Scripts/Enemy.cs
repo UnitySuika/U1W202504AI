@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class Enemy
@@ -78,7 +80,7 @@ public class Enemy
     NextActions = AI(battle);
   }
 
-  public bool ReceiveDamage(int damageValue)
+  public bool ReceiveDamage(int damageValue, BattleEventQueue beq)
   {
     foreach (StatusEffect statusEffect in StatusEffects)
     {
@@ -88,12 +90,26 @@ public class Enemy
       }
     }
     Hp = Mathf.Max(0, Hp - damageValue);
+
+    {
+      BattleEvent be = new BattleEvent(BattleEvent.EventTypes.EnemyDamage);
+      be.Value = Hp;
+      be.TargetEnemies = new List<Enemy>() { this };
+      beq.Enqueue(be);
+    }
+
     return Hp == 0;
   }
 
-  public void Heal(int healValue)
+  public void Heal(int healValue, BattleEventQueue beq)
   {
     Hp = Mathf.Min(MaxHp, Hp + healValue);
+
+    {
+      BattleEvent be = new BattleEvent(BattleEvent.EventTypes.EnemyHeal);
+      be.TargetEnemies = new List<Enemy>() { this };
+      beq.Enqueue(be);
+    }
   }
 
   public bool CanPlayAction()
@@ -101,22 +117,43 @@ public class Enemy
     return NextActions.Count > 0;
   }
 
-  public EnemyActionData PlayAction(Battle battle)
+  public EnemyActionData PlayAction(Battle battle, BattleEventQueue beq)
   {
     if (NextActions.Count == 0) return null;
 
     EnemyActionData action = NextActions.Dequeue();
+
+    {
+      BattleEvent be = new BattleEvent(BattleEvent.EventTypes.EnemyPlayAction);
+      be.TargetEnemies = new List<Enemy>() { this };
+      beq.Enqueue(be);
+    }
+
     if (action.ActionType == EnemyActionTypes.Attack)
     {
-      battle.MainCharacter.ReceiveDamage(action.Value);
+      battle.MainCharacter.ReceiveDamage(action.Value, beq);
     }
     else if (action.ActionType == EnemyActionTypes.Defend)
     {
-      StatusEffects.Add(new StatusEffect(StatusEffect.EffectTypes.DefenceUp, action.Value, 1));
+      StatusEffect se = new StatusEffect(StatusEffect.EffectTypes.DefenceUp, action.Value, 1);
+      StatusEffects.Add(se);
+
+      {
+        BattleEvent be = new BattleEvent(BattleEvent.EventTypes.EnemyGetStatusEffect);
+        be.TargetEnemies = new List<Enemy>() { this };
+        be.TargetStatusEffects = new List<StatusEffect>() { se };
+        beq.Enqueue(be);
+      }
     }
     else if (action.ActionType == EnemyActionTypes.Heal)
     {
-      Heal(action.Value);
+      Heal(action.Value, beq);
+    }
+
+    {
+      BattleEvent be = new BattleEvent(BattleEvent.EventTypes.EndEnemyPlayAction);
+      be.TargetEnemies = new List<Enemy>() { this };
+      beq.Enqueue(be);
     }
     
     return action;

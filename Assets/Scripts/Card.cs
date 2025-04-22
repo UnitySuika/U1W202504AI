@@ -61,7 +61,7 @@ public class Card
     // Debug.Log(CardUtility.JsonExpressionToString(Effect));
   }
 
-  public string PlayEffectRecursive(JsonExpression je, Battle battle, PlayedData playedData)
+  public string PlayEffectRecursive(JsonExpression je, Battle battle, PlayedData playedData, BattleEventQueue beq)
   {
     if (je.Value != null)
     {
@@ -69,16 +69,16 @@ public class Card
     }
     else if (je.Elements.ContainsKey("root"))
     {
-      return PlayEffectRecursive(je.Elements["root"], battle, playedData);
+      return PlayEffectRecursive(je.Elements["root"], battle, playedData, beq);
     }
 
-    string type = PlayEffectRecursive(je.Elements["type"], battle, playedData);
+    string type = PlayEffectRecursive(je.Elements["type"], battle, playedData, beq);
 
     switch (type)
     {
       case "conditional":
         bool condition;
-        if (PlayEffectRecursive(je.Elements["condition"], battle, playedData) == "TRUE")
+        if (PlayEffectRecursive(je.Elements["condition"], battle, playedData, beq) == "TRUE")
         {
           condition = true;
         }
@@ -89,28 +89,33 @@ public class Card
 
         if (condition)
         {
-          return PlayEffectRecursive(je.Elements["then"], battle, playedData);
+          return PlayEffectRecursive(je.Elements["then"], battle, playedData, beq);
         }
 
         break;
       case "comparison_greater":
-        int l1 = int.Parse(PlayEffectRecursive(je.Elements["left"], battle, playedData));
-        int r1 = int.Parse(PlayEffectRecursive(je.Elements["right"], battle, playedData));
+        int l1 = int.Parse(PlayEffectRecursive(je.Elements["left"], battle, playedData, beq));
+        int r1 = int.Parse(PlayEffectRecursive(je.Elements["right"], battle, playedData, beq));
         return (l1 > r1) ? "TRUE" : "FALSE";
       case "multiply":
-        int l2 = int.Parse(PlayEffectRecursive(je.Elements["left"], battle, playedData));
-        int r2 = int.Parse(PlayEffectRecursive(je.Elements["right"], battle, playedData));
+        int l2 = int.Parse(PlayEffectRecursive(je.Elements["left"], battle, playedData, beq));
+        int r2 = int.Parse(PlayEffectRecursive(je.Elements["right"], battle, playedData, beq));
         return (l2 * r2).ToString();
       // ここから関数群
       case "attack":
-        int attackValue = int.Parse(PlayEffectRecursive(je.Elements["value"], battle, playedData));
-        return playedData.SelectedEnemy.ReceiveDamage(attackValue) ? "TRUE" : "FALSE";
+        int attackValue = int.Parse(PlayEffectRecursive(je.Elements["value"], battle, playedData, beq));
+
+        bool isDead = playedData.SelectedEnemy.ReceiveDamage(attackValue, beq);
+
+        return isDead ? "TRUE" : "FALSE";
       case "heal":
-        int healValue = int.Parse(PlayEffectRecursive(je.Elements["value"], battle, playedData));
-        battle.MainCharacter.Heal(healValue);
+        int healValue = int.Parse(PlayEffectRecursive(je.Elements["value"], battle, playedData, beq));
+        
+        battle.MainCharacter.Heal(healValue, beq);
+
         break;
       case "card_exist_number":
-        string included = PlayEffectRecursive(je.Elements["value"], battle, playedData);
+        string included = PlayEffectRecursive(je.Elements["value"], battle, playedData, beq);
         int existCount = 0;
         foreach (Card card in battle.Hand)
         {
@@ -121,7 +126,7 @@ public class Card
         }
         return existCount.ToString();
       case "value":
-        string value = PlayEffectRecursive(je.Elements["value"], battle, playedData);
+        string value = PlayEffectRecursive(je.Elements["value"], battle, playedData, beq);
         switch (value)
         {
           case "PLAYER_HP":
@@ -137,9 +142,26 @@ public class Card
     return "NULL";
   }
 
-  public void PlayEffect(Battle battle, PlayedData playedData)
+  public void PlayEffect(Battle battle, PlayedData playedData, BattleEventQueue beq)
   {
-    battle.SetEnergy(battle.Energy - Energy); 
-    PlayEffectRecursive(EffectObject, battle, playedData);
+    battle.SetEnergy(battle.Energy - Energy);
+
+    {
+      BattleEvent be = new BattleEvent(BattleEvent.EventTypes.DecreaseEnergy);
+      be.Value = battle.Energy;
+      beq.Enqueue(be);
+    }
+
+    {
+      BattleEvent be = new BattleEvent(BattleEvent.EventTypes.CardPlayEffect);
+      beq.Enqueue(be);
+    }
+
+    PlayEffectRecursive(EffectObject, battle, playedData, beq);
+
+    {
+      BattleEvent be = new BattleEvent(BattleEvent.EventTypes.EndCardPlayEffect);
+      beq.Enqueue(be);
+    }
   }
 }

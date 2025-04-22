@@ -43,9 +43,9 @@ public class EnemyActionView : MonoBehaviour
     CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
 
     playImage.gameObject.SetActive(true);
-    await playImage.DOFade(1f, 0.25f).ToUniTask(cancellationToken: token);
+    await playImage.DOFade(1f, 0.3f).ToUniTask(cancellationToken: token);
     token.ThrowIfCancellationRequested();
-    await playImage.DOFade(0f, 0.125f).ToUniTask(cancellationToken: token);
+    await playImage.DOFade(0f, 0.2f).ToUniTask(cancellationToken: token);
     token.ThrowIfCancellationRequested();
   }
 }

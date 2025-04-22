@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
@@ -51,13 +52,15 @@ public class EnemyView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
 
   public Queue<EnemyActionView> enemyActionViews = new Queue<EnemyActionView>();
 
+  public Queue<EnemyStatusEffectView> StatusEffectViews = new Queue<EnemyStatusEffectView>();
+
   public void Set(Enemy enemy)
   {
     TargetEnemy = enemy;
     nameText.text = enemy.Source.Id;
     hpView.SetHp(enemy.Hp, enemy.MaxHp);
   }
-
+  
   public void SetActions()
   {
     foreach (EnemyActionView actionView in enemyActionViews)
@@ -74,6 +77,7 @@ public class EnemyView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     }
   }
 
+  /*
   public void SetStatusEffects()
   {
     foreach (Transform t in enemyStatusEffectViewParent)
@@ -87,6 +91,7 @@ public class EnemyView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
       view.Set(statusEffect);
     }
   }
+  */
 
   public void Validate()
   {
@@ -174,7 +179,7 @@ public class EnemyView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         await rectTransform.DOAnchorPosY(50f, 0.5f).SetRelative().SetEase(Ease.OutSine).ToUniTask(cancellationToken: token);
         token.ThrowIfCancellationRequested();
 
-        SetStatusEffects();
+        // SetStatusEffects();
 
         await rectTransform.DOAnchorPosY(-50f, 0.25f).SetRelative().SetEase(Ease.InSine).ToUniTask(cancellationToken: token);
         token.ThrowIfCancellationRequested();
@@ -189,5 +194,87 @@ public class EnemyView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
 
         break;
     }
+  }
+
+  
+  public async UniTask StartAction(Enemy.EnemyActionData action, CancellationToken token)
+  {
+    CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
+
+    EnemyActionView actionView = enemyActionViews.Dequeue();
+
+    List<UniTask> tasks = new List<UniTask>
+    {
+      actionView.Play(token),
+      rectTransform.DOAnchorPosY(-100f, 0.5f)
+        .SetRelative()
+        .SetEase(Ease.OutSine)
+        .ToUniTask(cancellationToken: token)
+    };
+
+    await UniTask.WhenAll(tasks);
+    token.ThrowIfCancellationRequested();
+
+    Destroy(actionView.gameObject);
+  }
+
+  public async UniTask EndAction(CancellationToken token)
+  {
+    CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
+
+    await rectTransform.DOAnchorPosY(100f, 0.25f).SetRelative().SetEase(Ease.InSine).ToUniTask(cancellationToken: token);
+    token.ThrowIfCancellationRequested();
+  }
+
+  public async UniTask<bool> ReceiveDamage(CancellationToken token)
+  {
+    CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
+
+    Set(TargetEnemy);
+
+    await GetComponent<RectTransform>().DOShakeAnchorPos(0.5f, 10)
+      .SetEase(Ease.OutSine)
+      .ToUniTask(cancellationToken: token);
+      
+    token.ThrowIfCancellationRequested();
+
+    if (TargetEnemy.Hp == 0) return true;
+    
+    return false;
+  }
+
+  public async UniTask Heal(CancellationToken token)
+  {
+    CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
+
+    await transform.DOLocalRotate(new Vector3(0, 0, 360), 0.5f)
+      .SetEase(Ease.OutSine)
+      .SetRelative()
+      .ToUniTask(cancellationToken: token);
+
+    token.ThrowIfCancellationRequested();
+
+    transform.localEulerAngles = new Vector3(0, 0, 0);
+    
+    Set(TargetEnemy);
+  }
+
+  public async UniTask GetStatusEffect(Enemy.StatusEffect statusEffect, CancellationToken token)
+  {
+    CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
+
+    EnemyStatusEffectView view = Instantiate(enemyStatusEffectViewPrefab, enemyStatusEffectViewParent);
+    StatusEffectViews.Enqueue(view);
+    await view.Set(statusEffect, token);
+    token.ThrowIfCancellationRequested();
+  }
+
+  public async UniTask UpdateStatusEffect(CancellationToken token)
+  {
+    CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
+    EnemyStatusEffectView view = StatusEffectViews.Dequeue();
+    await view.Delete(token);
+    token.ThrowIfCancellationRequested();
+    Destroy(view.gameObject);
   }
 }

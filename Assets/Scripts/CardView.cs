@@ -75,10 +75,14 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
   public void Validate()
   {
     isValid = true;
+    frameImage.color = new Color(1f, 1f, 1f);
+    barImage.color = new Color(1f, 1f, 1f);
   }
   public void Invalidate()
   {
     isValid = false;
+    frameImage.color = new Color(0.5f, 0.5f, 0.5f);
+    barImage.color = new Color(0.5f, 0.5f, 0.5f);
   }
 
   public void Set(Card card)
@@ -205,7 +209,7 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
       token = CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy()).Token;
     }
-    await MoveAlpha(1f, 0f, 0.5f, token);
+    await MoveAlpha(1f, 0f, 0.25f, token);
     token.ThrowIfCancellationRequested();
     Destroy(gameObject);
   }

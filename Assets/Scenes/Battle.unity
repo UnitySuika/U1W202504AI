@@ -1448,8 +1448,8 @@ MonoBehaviour:
   enemySources:
   - {fileID: 11400000, guid: 3bcb725601d5a134395428097cc8993b, type: 2}
   - {fileID: 11400000, guid: 0d02a1485805122439816a71d1a23155, type: 2}
-  minEnemyNumber: 1
-  maxEnemyNumber: 3
+  minEnemyNumber: 3
+  maxEnemyNumber: 5
   enemyViewPrefab: {fileID: 5574205940035745138, guid: fefce3af1f8fe984db85c3e8f4e33ef8, type: 3}
   enemyViewsInterval: 300
   enemyViewsPosY: 380
