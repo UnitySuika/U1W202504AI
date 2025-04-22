@@ -18,3 +18,4 @@ MonoBehaviour:
   Parameters: []
   EffectDescription: "\u6575\u306B5\u306E\u30C0\u30E1\u30FC\u30B8\u3092\u4E0E\u3048\u308B"
   EffectCLANG: attack ( 5 )
+  LoveCost: 2

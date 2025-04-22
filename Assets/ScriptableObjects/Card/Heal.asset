@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Id: "\u56DE\u5FA9\u30AB\u30FC\u30C9"
   Energy: 1
+  CardType: 0
   Parameters: []
   EffectDescription: "HP\u309210\u56DE\u5FA9\u3059\u308B"
   EffectCLANG: heal ( 10 )
+  LoveCost: 3

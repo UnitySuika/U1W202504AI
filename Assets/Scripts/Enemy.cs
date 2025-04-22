@@ -17,7 +17,7 @@ public class Enemy
 
   public Parameter[] Parameters { get; private set; }
 
-  public Func<Battle, Queue<EnemyActionData>> AI { get; private set; }
+  public Func<Battle, Enemy, Queue<EnemyActionData>> AI { get; private set; }
 
   public int MaxHp { get; private set; }
 
@@ -77,7 +77,7 @@ public class Enemy
 
   public void SetNextActionData(Battle battle)
   {
-    NextActions = AI(battle);
+    NextActions = AI(battle, this);
   }
 
   public bool ReceiveDamage(int damageValue, BattleEventQueue beq)
@@ -135,7 +135,7 @@ public class Enemy
     }
     else if (action.ActionType == EnemyActionTypes.Defend)
     {
-      StatusEffect se = new StatusEffect(StatusEffect.EffectTypes.DefenceUp, action.Value, 1);
+      StatusEffect se = new StatusEffect(StatusEffect.EffectTypes.DefenceUp, action.Value, 2);
       StatusEffects.Add(se);
 
       {

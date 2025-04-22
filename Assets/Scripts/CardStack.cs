@@ -45,4 +45,16 @@ public class CardStack
     }
     cards = nextCards;
   }
+
+  public void ReturnToDeck()
+  {
+    BattleInformation.Deck = new Deck();
+    Debug.Log(cards.Count);
+    while (cards.Count > 0)
+    {
+      LinkedListNode<Card> cardNode = cards.First;
+      BattleInformation.Deck.Add(cardNode.Value);
+      cards.RemoveFirst();
+    }
+  }
 }

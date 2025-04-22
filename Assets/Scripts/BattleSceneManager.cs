@@ -3,8 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class BattleSceneManager : MonoBehaviour
 {
@@ -53,6 +57,15 @@ public class BattleSceneManager : MonoBehaviour
   [SerializeField]
   private TurnView turnView;
 
+  [SerializeField]
+  private Image floorView;
+
+  [SerializeField]
+  private TextMeshProUGUI floorText;
+
+  [SerializeField]
+  private TextMeshProUGUI turnText;
+
   public PlayArea BattlePlayArea => playArea;
 
   public List<EnemyView> EnemyViews { get; private set; }
@@ -64,10 +77,18 @@ public class BattleSceneManager : MonoBehaviour
 
   private void BattleInitialize()
   {
-    Deck deck = new Deck();
-    foreach (CardSource cardSource in initialCardSources)
+    Deck deck;
+    if (BattleInformation.FloorNumber == 1)
     {
-      deck.Add(new Card(cardSource));
+      deck = new Deck();
+      foreach (CardSource cardSource in initialCardSources)
+      {
+        deck.Add(new Card(cardSource));
+      }
+    }
+    else
+    {
+      deck = BattleInformation.Deck;
     }
 
     Character character = new Character("冒険者", 50);
@@ -106,6 +127,16 @@ public class BattleSceneManager : MonoBehaviour
       if (card == null) break;
       await handView.AddCard(card, token);
       token.ThrowIfCancellationRequested();
+    }
+
+    foreach (Card target in CurrentBattle.Hand)
+    {
+      target.AddLove();
+    }
+
+    foreach (CardView cardView in handView.CardViews)
+    {
+      cardView.SetLove(cardView.ViewCard.LoveNumber);
     }
 
     CurrentBattle.SetNextEnemyActions();
@@ -202,8 +233,22 @@ public class BattleSceneManager : MonoBehaviour
     }
   }
 
+  private async UniTask PlayFloorView(CancellationToken token)
+  {
+    AudioManager.Instance.PlaySe("battle_start", false);
+    floorView.gameObject.SetActive(true);
+    floorText.text = $"地下 {BattleInformation.FloorNumber} 階";
+    turnText.text = $"{BattleInformation.TurnSum} ターン経過";
+    await UniTask.Delay(3000, cancellationToken: token);
+    token.ThrowIfCancellationRequested();
+    floorView.GetComponent<CanvasGroup>().DOFade(0f, 1f)
+      .OnComplete(() => floorView.gameObject.SetActive(false))
+      .ToUniTask(cancellationToken: token).Forget();
+  }
+
   private async UniTask BattleMain(CancellationToken token)
   {
+    await PlayFloorView(this.GetCancellationTokenOnDestroy());
     BattleInitialize();
     while (true)
     {
@@ -231,7 +276,13 @@ public class BattleSceneManager : MonoBehaviour
         BattleEventQueue beq = new BattleEventQueue();
         playedCard.PlayEffect(CurrentBattle, playedData, beq);
 
+        turnView.Invalidate();
+
+        await handView.RemoveCard(playedCard, true, this.GetCancellationTokenOnDestroy());
+
         await PlayBattleEventQueue(beq, token);
+
+        turnView.Validate();
 
         CurrentBattle.UpdateStatus();
 
@@ -240,9 +291,7 @@ public class BattleSceneManager : MonoBehaviour
 
         energyView.Set(CurrentBattle.Energy);
 
-        handView.RemoveCard(playedCard, this.GetCancellationTokenOnDestroy()).Forget();
-
-        CheckGameState();
+        if (CheckGameState()) return;
 
         playedCard = null;
         
@@ -267,7 +316,7 @@ public class BattleSceneManager : MonoBehaviour
 
       for (int i = 0; i < handNumber; ++i)
       {
-        await handView.RemoveCard(handView.CardViews[0].ViewCard, token);
+        await handView.RemoveCard(handView.CardViews[0].ViewCard, false, token);
         token.ThrowIfCancellationRequested();
       }
 
@@ -278,10 +327,7 @@ public class BattleSceneManager : MonoBehaviour
 
       foreach (EnemyView enemyView in EnemyViews)
       {
-        for (int i = 0; i < enemyView.StatusEffectViews.Count; ++i)
-        {
-          await enemyView.UpdateStatusEffect(token);
-        }
+        await enemyView.UpdateStatusEffects(token);
       }
       await UniTask.Delay(250, cancellationToken: token);
       token.ThrowIfCancellationRequested();
@@ -299,6 +345,8 @@ public class BattleSceneManager : MonoBehaviour
           token.ThrowIfCancellationRequested();
         }
       }
+
+      ++BattleInformation.TurnSum;
 
       CurrentBattle.SetTurn(Battle.Turns.Player);
     }
@@ -333,17 +381,62 @@ public class BattleSceneManager : MonoBehaviour
   }
   */
 
+  private async UniTask WinTask(CancellationToken token)
+  {
+    AudioManager.Instance.StopBgm();
+
+    for (int i = 0; i < CurrentBattle.Hand.Count; ++i)
+    {
+      CurrentBattle.InsertCard(CurrentBattle.Hand[0]);
+    }
+
+    int handViewNumber = handView.CardViews.Count;
+    for (int i = 0; i < handViewNumber; ++i)
+    {
+      await handView.RemoveCard(handView.CardViews[0].ViewCard, false, token);
+      token.ThrowIfCancellationRequested();
+    }
+    
+    CurrentBattle.ReturnStackToDeck();
+
+    ++BattleInformation.FloorNumber;
+
+    await UniTask.Delay(1000, cancellationToken: token);
+    token.ThrowIfCancellationRequested();
+    TransitionMotionManager.Instance.PlayTransitionMotion("Battle", TransitionMotionManager.TransitionMotionTypes.FadeNormal).Forget();
+  }
+
+  private async UniTask LoseTask(CancellationToken token)
+  {
+    AudioManager.Instance.StopBgm();
+    await UniTask.Delay(1000, cancellationToken: token);
+    token.ThrowIfCancellationRequested();
+    TransitionMotionManager.Instance.PlayTransitionMotion("Lose", TransitionMotionManager.TransitionMotionTypes.FadeNormal).Forget();
+  }
+
   private bool CheckGameState()
   {
     CurrentBattle.EvaluateState();
     if (CurrentBattle.State == Battle.States.Win)
     {
       winView.SetActive(true);
+      foreach (CardView cardView in handView.CardViews)
+      {
+        cardView.Invalidate();
+      }
+      turnView.Set(CurrentBattle);
+      WinTask(this.GetCancellationTokenOnDestroy()).Forget();
       return true;
     }
     else if (CurrentBattle.State == Battle.States.Lose)
     {
       loseView.SetActive(true);
+      foreach (CardView cardView in handView.CardViews)
+      {
+        cardView.Invalidate();
+      }
+      turnView.Set(CurrentBattle);
+      LoseTask(this.GetCancellationTokenOnDestroy()).Forget();
       return true;
     }
     return false;

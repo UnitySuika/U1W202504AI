@@ -14,4 +14,6 @@ public class CardSource : ScriptableObject
   public string EffectDescription;
 
   public string EffectCLANG;
+
+  public int LoveCost;
 }

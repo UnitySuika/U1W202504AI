@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 using static Enemy;
 
 [CreateAssetMenu(menuName = "ScriptableObject/Enemy")]
@@ -10,24 +11,37 @@ public class EnemySource : ScriptableObject
 
   public Parameter[] Parameters;
 
-  public Func<Battle, Queue<EnemyActionData>> GenerateAI()
+  public Func<Battle, Enemy, Queue<EnemyActionData>> GenerateAI()
   {
     if (Id == "ゴブリン")
     {
-      return static battle =>
+      return (battle, enemy) =>
       {
         Queue<EnemyActionData> actions = new Queue<EnemyActionData>();
-        actions.Enqueue(new EnemyActionData(EnemyActionTypes.Attack, 5));
+        actions.Enqueue(new EnemyActionData(EnemyActionTypes.Attack, 50));
         return actions;
       };
     }
     else if (Id == "スライム")
     {
-      return static battle =>
+      return (battle, enemy) =>
       {
         Queue<EnemyActionData> actions = new Queue<EnemyActionData>();
         actions.Enqueue(new EnemyActionData(EnemyActionTypes.Heal, 5));
-        actions.Enqueue(new EnemyActionData(EnemyActionTypes.Defend, 10));
+        
+        bool isContainDefenceUpSE = false;
+        foreach (StatusEffect statusEffect in enemy.StatusEffects)
+        {
+          if (statusEffect.Type == StatusEffect.EffectTypes.DefenceUp)
+          {
+            isContainDefenceUpSE = true;
+          }
+        }
+        if (!isContainDefenceUpSE)
+        {
+          actions.Enqueue(new EnemyActionData(EnemyActionTypes.Defend, 10));
+        }
+
         return actions;
       };
     }

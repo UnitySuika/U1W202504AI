@@ -27,6 +27,15 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
   [SerializeField]
   private CanvasGroup canvasGroup;
+  
+  [SerializeField]
+  private TextMeshProUGUI energyCostText;
+
+  [SerializeField]
+  private TextMeshProUGUI loveCostText;
+  
+  [SerializeField]
+  private TextMeshProUGUI loveText;
 
   public Card ViewCard { get; private set; }
 
@@ -89,6 +98,13 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
   {
     nameText.text = card.Source.Id;
     effectText.text = card.Source.EffectDescription;
+    energyCostText.text = card.Energy.ToString();
+    loveCostText.text = card.LoveCost.ToString();
+  }
+
+  public void SetLove(int loveNumber)
+  {
+    loveText.text = loveNumber.ToString();
   }
 
   public void OnPointerEnter(PointerEventData eventData)
@@ -150,6 +166,7 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
           battleSceneManager.BattlePlayArea.Validate();
         }
         rectTransform.SetParent(parentRectTransformMoving);
+        AudioManager.Instance.PlaySe("card_get", false);
       }
       
       if (Input.GetMouseButton(0))
@@ -202,14 +219,22 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     }
   }
 
-  public async UniTask Erase(CancellationToken token)
+  public async UniTask Erase(bool isPlayed, CancellationToken token)
   {
     isValid = false;
     if (token != myToken)
     {
       token = CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy()).Token;
     }
-    await MoveAlpha(1f, 0f, 0.25f, token);
+    List<UniTask> eraseTasks = new List<UniTask>();
+    float fadeTime = isPlayed ? 1f : 0.25f;
+    eraseTasks.Add(MoveAlpha(1f, 0f, fadeTime, token));
+    if (isPlayed)
+    {
+      AudioManager.Instance.PlaySe("card_play", false);
+      eraseTasks.Add(transform.DOScale(2f, fadeTime).SetRelative().ToUniTask(cancellationToken: token));
+    }
+    await UniTask.WhenAll(eraseTasks);
     token.ThrowIfCancellationRequested();
     Destroy(gameObject);
   }

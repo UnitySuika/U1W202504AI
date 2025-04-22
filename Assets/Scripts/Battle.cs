@@ -50,6 +50,8 @@ public class Battle
     Energy = 0;
 
     SetTurn(Turns.Player);
+
+    AudioManager.Instance.PlayBgm("battle");
   }
 
   public void SetEnergy(int value)
@@ -115,5 +117,10 @@ public class Battle
     {
       enemy.AdvanceTurn();
     }
+  }
+
+  public void ReturnStackToDeck()
+  {
+    CStack.ReturnToDeck();
   }
 }

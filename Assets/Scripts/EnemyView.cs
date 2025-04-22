@@ -201,6 +201,8 @@ public class EnemyView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
   {
     CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
 
+    AudioManager.Instance.PlaySe("monster", false);
+
     EnemyActionView actionView = enemyActionViews.Dequeue();
 
     List<UniTask> tasks = new List<UniTask>
@@ -231,6 +233,8 @@ public class EnemyView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
 
     Set(TargetEnemy);
+    
+    AudioManager.Instance.PlaySe("damaged", false);
 
     await GetComponent<RectTransform>().DOShakeAnchorPos(0.5f, 10)
       .SetEase(Ease.OutSine)
@@ -238,7 +242,11 @@ public class EnemyView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
       
     token.ThrowIfCancellationRequested();
 
-    if (TargetEnemy.Hp == 0) return true;
+    if (TargetEnemy.Hp == 0)
+    {
+      AudioManager.Instance.PlaySe("die", false);
+      return true;
+    }
     
     return false;
   }
@@ -246,6 +254,8 @@ public class EnemyView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
   public async UniTask Heal(CancellationToken token)
   {
     CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
+    
+    AudioManager.Instance.PlaySe("heal", false);
 
     await transform.DOLocalRotate(new Vector3(0, 0, 360), 0.5f)
       .SetEase(Ease.OutSine)
@@ -263,18 +273,48 @@ public class EnemyView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
   {
     CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
 
+    AudioManager.Instance.PlaySe("add_status_effect", false);
+
     EnemyStatusEffectView view = Instantiate(enemyStatusEffectViewPrefab, enemyStatusEffectViewParent);
     StatusEffectViews.Enqueue(view);
     await view.Set(statusEffect, token);
     token.ThrowIfCancellationRequested();
   }
 
-  public async UniTask UpdateStatusEffect(CancellationToken token)
+  public async UniTask UpdateStatusEffects(CancellationToken token)
   {
     CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
-    EnemyStatusEffectView view = StatusEffectViews.Dequeue();
-    await view.Delete(token);
-    token.ThrowIfCancellationRequested();
-    Destroy(view.gameObject);
+    foreach (EnemyStatusEffectView statusView in StatusEffectViews)
+    {
+      if (statusView.TargetStatusEffect.RemainingTurn <= 0)
+      {
+        await statusView.Delete(token);
+        token.ThrowIfCancellationRequested();
+      }
+      else
+      {
+        await statusView.UpdateTurn(token);
+        token.ThrowIfCancellationRequested();
+      }
+    }
+
+    ReCreateStatusEffectViewQueue();
+  }
+
+  public void ReCreateStatusEffectViewQueue()
+  {
+    Queue<EnemyStatusEffectView> next = new Queue<EnemyStatusEffectView>();
+    foreach (EnemyStatusEffectView statusView in StatusEffectViews)
+    {
+      if (statusView.TargetStatusEffect == null)
+      {
+        Destroy(statusView.gameObject);
+      }
+      else
+      {
+        next.Enqueue(statusView);
+      }
+    }
+    StatusEffectViews = next;
   }
 }

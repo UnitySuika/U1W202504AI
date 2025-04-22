@@ -58,7 +58,7 @@ public class HandView : MonoBehaviour
     token.ThrowIfCancellationRequested();
   }
 
-  public async UniTask RemoveCard(Card card, CancellationToken token)
+  public async UniTask RemoveCard(Card card, bool isPlayed, CancellationToken token)
   {
     token = CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy()).Token;
 
@@ -71,7 +71,7 @@ public class HandView : MonoBehaviour
       if (CardViews[cv_i].ViewCard == card)
       {
         removeAt = cv_i;
-        CardViews[removeAt].Erase(this.GetCancellationTokenOnDestroy()).Forget();
+        tasks.Add(CardViews[removeAt].Erase(isPlayed, token));
       }
     }
 

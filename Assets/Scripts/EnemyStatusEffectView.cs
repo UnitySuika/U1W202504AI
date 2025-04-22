@@ -29,9 +29,13 @@ public class EnemyStatusEffectView : MonoBehaviour
   [SerializeField]
   private EffectTypeImageSource[] effectTypeImageSource;
 
+  public Enemy.StatusEffect TargetStatusEffect { get; private set; }
+
   public async UniTask Set(Enemy.StatusEffect statusEffect, CancellationToken token)
   {
     CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
+
+    TargetStatusEffect = statusEffect;
 
     statusEffectTypeImage.sprite = Array.Find(effectTypeImageSource, item => item.StatusEffectType == statusEffect.Type).ImageSource;
     statusEffectValueText.text = statusEffect.Value.ToString();
@@ -41,9 +45,31 @@ public class EnemyStatusEffectView : MonoBehaviour
     token.ThrowIfCancellationRequested();
   }
 
+  public async UniTask UpdateTurn(CancellationToken token)
+  {
+    CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
+
+    statusEffectTypeImage.sprite = Array.Find(effectTypeImageSource, item => item.StatusEffectType == TargetStatusEffect.Type).ImageSource;
+    statusEffectValueText.text = TargetStatusEffect.Value.ToString();
+    statusEffectTurnText.text = TargetStatusEffect.RemainingTurn.ToString();
+    RectTransform turnTextRectTransform = statusEffectTurnText.GetComponent<RectTransform>();
+    Vector2 originalSizeDelta = turnTextRectTransform.sizeDelta;
+
+    await turnTextRectTransform.DOSizeDelta(new Vector2(0f, 0f), 0.1f)
+      .SetEase(Ease.OutSine)
+      .ToUniTask(cancellationToken: token);
+    token.ThrowIfCancellationRequested();
+    await turnTextRectTransform.DOSizeDelta(originalSizeDelta, 0.1f)
+      .SetEase(Ease.OutBounce)
+      .ToUniTask(cancellationToken: token);
+    token.ThrowIfCancellationRequested();
+  }
+
   public async UniTask Delete(CancellationToken token)
   {
     CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
+
+    TargetStatusEffect = null;
 
     GetComponent<RectTransform>().sizeDelta = new Vector2(50f, 50f);
     statusEffectValueText.gameObject.SetActive(false);

@@ -26,6 +26,8 @@ public class CharacterView : MonoBehaviour
     CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
 
     Set(chara);
+    
+    AudioManager.Instance.PlaySe("damaged", false);
 
     await GetComponent<RectTransform>().DOShakeAnchorPos(0.5f, 10)
       .SetEase(Ease.OutSine)
@@ -37,6 +39,8 @@ public class CharacterView : MonoBehaviour
   public async UniTask Heal(CancellationToken token)
   {
     CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
+    
+    AudioManager.Instance.PlaySe("heal", false);
 
     await transform.DOLocalRotate(new Vector3(0, 0, 360f), 0.5f)
       .SetEase(Ease.OutSine)

@@ -50,6 +50,10 @@ public class Card
 
   public int RandomNumber;
 
+  public int LoveCost;
+
+  public int LoveNumber { get; private set; }
+
   public Card(CardSource source)
   {
     Source = source;
@@ -58,6 +62,7 @@ public class Card
     Parameters = source.Parameters;
     EffectObject = CardUtility.CardLangToObject(source.EffectCLANG);
     RandomNumber = UnityEngine.Random.Range(0, 10);
+    LoveCost = source.LoveCost;
     // Debug.Log(CardUtility.JsonExpressionToString(Effect));
   }
 
@@ -163,5 +168,10 @@ public class Card
       BattleEvent be = new BattleEvent(BattleEvent.EventTypes.EndCardPlayEffect);
       beq.Enqueue(be);
     }
+  }
+
+  public void AddLove()
+  {
+    ++LoveNumber;
   }
 }
