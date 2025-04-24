@@ -18,7 +18,7 @@ public class EnemySource : ScriptableObject
       return (battle, enemy) =>
       {
         Queue<EnemyActionData> actions = new Queue<EnemyActionData>();
-        actions.Enqueue(new EnemyActionData(EnemyActionTypes.Attack, Array.Find(Parameters, param => param.Id == "ATK").Value));
+        actions.Enqueue(new EnemyActionData(EnemyActionTypes.Attack, Array.Find(enemy.Parameters, param => param.Id == "ATK").Value));
         return actions;
       };
     }
@@ -27,7 +27,7 @@ public class EnemySource : ScriptableObject
       return (battle, enemy) =>
       {
         Queue<EnemyActionData> actions = new Queue<EnemyActionData>();
-        actions.Enqueue(new EnemyActionData(EnemyActionTypes.Heal, Array.Find(Parameters, param => param.Id == "HEAL").Value));
+        actions.Enqueue(new EnemyActionData(EnemyActionTypes.Heal, Array.Find(enemy.Parameters, param => param.Id == "HEAL").Value));
         
         bool isContainDefenceUpSE = false;
         foreach (StatusEffect statusEffect in enemy.StatusEffects)
@@ -39,12 +39,39 @@ public class EnemySource : ScriptableObject
         }
         if (!isContainDefenceUpSE)
         {
-          actions.Enqueue(new EnemyActionData(EnemyActionTypes.Defend, Array.Find(Parameters, param => param.Id == "DEFEND").Value));
+          actions.Enqueue(new EnemyActionData(EnemyActionTypes.Defend, Array.Find(enemy.Parameters, param => param.Id == "DEFEND").Value));
         }
 
         return actions;
       };
     }
-    return null;
+    else if (Id == "汎用AI兵")
+    {
+      return (battle, enemy) => 
+      {
+        Queue<EnemyActionData> actions = new Queue<EnemyActionData>();
+
+        if (enemy.Hp <= enemy.MaxHp / 2)
+        {
+          actions.Enqueue(new EnemyActionData(EnemyActionTypes.Defend, Array.Find(enemy.Parameters, param => param.Id == "DEFEND").Value));
+        }
+        else
+        {
+          actions.Enqueue(new EnemyActionData(EnemyActionTypes.Attack, Array.Find(enemy.Parameters, param => param.Id == "ATK").Value));
+        }
+
+        return actions;
+      };
+    }
+    else
+    {
+      return (battle, enemy) => 
+      {
+        Queue<EnemyActionData> actions = new Queue<EnemyActionData>();
+        actions.Enqueue(new EnemyActionData(EnemyActionTypes.Heal, Array.Find(enemy.Parameters, param => param.Id == "HEAL").Value));
+
+        return actions;
+      };
+    }
   }
 }

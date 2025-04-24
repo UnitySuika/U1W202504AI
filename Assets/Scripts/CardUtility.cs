@@ -122,6 +122,12 @@ public static class CardUtility
           je.Elements.Add("type", new JsonExpression("heal"));
           next.Enqueue((je, "value", phraseList[1]));
         }
+        else if (phraseList[0].Count == 1 && phraseList[0][0] == "defence_up")
+        {
+          je.Elements.Add("type", new JsonExpression("defence_up"));
+          next.Enqueue((je, "value", phraseList[1]));
+          next.Enqueue((je, "turn", phraseList[2]));
+        }
         else if (phraseList[0].Count == 1 && phraseList[0][0] == "card_exist_number")
         {
           je.Elements.Add("type", new JsonExpression("card_exist_number"));

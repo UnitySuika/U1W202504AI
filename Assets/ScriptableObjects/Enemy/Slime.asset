@@ -20,3 +20,5 @@ MonoBehaviour:
     Value: 10
   - Id: DEFEND
     Value: 5
+  - Id: DEFEND_TURN
+    Value: 5

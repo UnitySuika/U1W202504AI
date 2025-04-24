@@ -12,6 +12,7 @@ public class BattleEvent
     CharacterHeal,
     EnemyDamage,
     EnemyHeal,
+    CharacterGetStatusEffect,
     EnemyGetStatusEffect,
     DecreaseEnergy,
     IncreaseEnergy,
@@ -27,7 +28,8 @@ public class BattleEvent
 
   public Enemy.EnemyActionData TargetAction;
 
-  public List<Enemy.StatusEffect> TargetStatusEffects;
+  public List<Enemy.StatusEffect> TargetEnemyStatusEffects;
+  public List<Character.StatusEffect> TargetCharacterStatusEffects;
 
   public BattleEvent(EventTypes type)
   {

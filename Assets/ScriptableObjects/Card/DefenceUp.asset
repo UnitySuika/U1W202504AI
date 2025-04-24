@@ -10,14 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 279d27ee54c1bd24bb954586d9e1f040, type: 3}
-  m_Name: Attack
+  m_Name: DefenceUp
   m_EditorClassIdentifier: 
-  Id: "\u653B\u6483\u30AB\u30FC\u30C9"
+  Id: "\u9632\u5FA1"
   Energy: 1
-  CardType: 1
+  CardType: 0
   Parameters:
-  - Id: ATK
-    Value: 3
-  EffectDescription: "\u6575\u306B{ATK}\u306E\u30C0\u30E1\u30FC\u30B8\u3092\u4E0E\u3048\u308B"
-  EffectCLANG: attack ( ATK )
-  LoveCost: 2
+  - Id: DEFENCE_UP
+    Value: 5
+  - Id: DEFENCE_UP_TURN
+    Value: 1
+  EffectDescription: "{DEFENCE_UP_TURN}\u30BF\u30FC\u30F3\u3001{DEFENCE_UP}\u306E\u9632\u5FA1\u3092\u3059\u308B"
+  EffectCLANG: defence_up ( DEFENCE_UP ) ( DEFENCE_UP_TURN )
+  LoveCost: 0

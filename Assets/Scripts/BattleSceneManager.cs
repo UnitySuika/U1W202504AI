@@ -128,8 +128,6 @@ public class BattleSceneManager : MonoBehaviour
       }
     }
 
-    Debug.Log(BattleInformation.Deck.GetClone().Count);
-
     Character character = new Character("冒険者", 50);
     
     CurrentBattle = new Battle(character, enemySources, minEnemyNumber, maxEnemyNumber, deck);
@@ -157,6 +155,8 @@ public class BattleSceneManager : MonoBehaviour
   {
     CurrentBattle.SetEnergy(2);
     energyView.Set(CurrentBattle.Energy);
+    CurrentBattle.MainCharacter.AdvanceTurn();
+    await characterView.UpdateStatusEffects(token);
     await UniTask.Delay(1000, cancellationToken: token);
     token.ThrowIfCancellationRequested();
     handView.Initialize(this);
@@ -243,13 +243,17 @@ public class BattleSceneManager : MonoBehaviour
           await enemyView4.Heal(token);
           token.ThrowIfCancellationRequested();
           break;
+        case BattleEvent.EventTypes.CharacterGetStatusEffect:
+          await characterView.GetStatusEffect(be.TargetCharacterStatusEffects[0], token);
+          token.ThrowIfCancellationRequested();
+          break;
         case BattleEvent.EventTypes.EnemyGetStatusEffect:
           EnemyView enemyView5 = null;
           foreach (EnemyView view in EnemyViews)
           {
             if (view.TargetEnemy == be.TargetEnemies[0]) enemyView5 = view;
           }
-          await enemyView5.GetStatusEffect(be.TargetStatusEffects[0], token);
+          await enemyView5.GetStatusEffect(be.TargetEnemyStatusEffects[0], token);
           token.ThrowIfCancellationRequested();
           break;
         case BattleEvent.EventTypes.DecreaseEnergy:

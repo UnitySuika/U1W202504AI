@@ -135,13 +135,13 @@ public class Enemy
     }
     else if (action.ActionType == EnemyActionTypes.Defend)
     {
-      StatusEffect se = new StatusEffect(StatusEffect.EffectTypes.DefenceUp, action.Value, 2);
+      StatusEffect se = new StatusEffect(StatusEffect.EffectTypes.DefenceUp, action.Value, Array.Find(Parameters, param => param.Id == "DEFEND_TURN").Value);
       StatusEffects.Add(se);
 
       {
         BattleEvent be = new BattleEvent(BattleEvent.EventTypes.EnemyGetStatusEffect);
         be.TargetEnemies = new List<Enemy>() { this };
-        be.TargetStatusEffects = new List<StatusEffect>() { se };
+        be.TargetEnemyStatusEffects = new List<StatusEffect>() { se };
         beq.Enqueue(be);
       }
     }

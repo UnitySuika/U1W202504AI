@@ -173,6 +173,22 @@ public class Card
         battle.MainCharacter.Heal(healValue, beq);
 
         break;
+      case "defence_up":
+        int defence_up_value = int.Parse(PlayEffectRecursive(je.Elements["value"], battle, playedData, beq));
+
+        int defence_up_turn = int.Parse(PlayEffectRecursive(je.Elements["turn"], battle, playedData, beq));
+
+        Character.StatusEffect statusEffect = new Character.StatusEffect(Character.StatusEffect.EffectTypes.DefenceUp, defence_up_value, defence_up_turn);
+        battle.MainCharacter.StatusEffects.Add(statusEffect);
+
+        {
+          BattleEvent be = new BattleEvent(BattleEvent.EventTypes.CharacterGetStatusEffect);
+          be.TargetCharacterStatusEffects = new List<Character.StatusEffect>()
+          { statusEffect };
+          beq.Enqueue(be);
+        }
+        
+        break;
       case "card_exist_number":
         string included = PlayEffectRecursive(je.Elements["value"], battle, playedData, beq);
         int existCount = 0;

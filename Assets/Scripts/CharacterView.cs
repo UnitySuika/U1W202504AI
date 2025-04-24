@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
@@ -11,6 +12,14 @@ public class CharacterView : MonoBehaviour
   
   [SerializeField]
   private HpView hpView;
+  
+  [SerializeField]
+  private CharacterStatusEffectView characterStatusEffectViewPrefab;
+  
+  [SerializeField]
+  private RectTransform characterStatusEffectViewParent;
+
+  public Queue<CharacterStatusEffectView> StatusEffectViews = new Queue<CharacterStatusEffectView>();
 
   private Character chara;
 
@@ -52,5 +61,54 @@ public class CharacterView : MonoBehaviour
     transform.localEulerAngles = new Vector3(0, 0, 360f);
     
     Set(chara);
+  }
+
+  public async UniTask GetStatusEffect(Character.StatusEffect statusEffect, CancellationToken token)
+  {
+    CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
+
+    AudioManager.Instance.PlaySe("add_status_effect", false);
+
+    CharacterStatusEffectView view = Instantiate(characterStatusEffectViewPrefab, characterStatusEffectViewParent);
+    StatusEffectViews.Enqueue(view);
+    await view.Set(statusEffect, token);
+    token.ThrowIfCancellationRequested();
+  }
+
+  public async UniTask UpdateStatusEffects(CancellationToken token)
+  {
+    CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
+    foreach (CharacterStatusEffectView statusView in StatusEffectViews)
+    {
+      if (statusView.TargetStatusEffect.RemainingTurn <= 0)
+      {
+        await statusView.Delete(token);
+        token.ThrowIfCancellationRequested();
+      }
+      else
+      {
+        await statusView.UpdateTurn(token);
+        token.ThrowIfCancellationRequested();
+      }
+    }
+
+    ReCreateStatusEffectViewQueue();
+  }
+
+  public void ReCreateStatusEffectViewQueue()
+  {
+    Queue<CharacterStatusEffectView> next = new Queue<CharacterStatusEffectView>();
+    foreach (CharacterStatusEffectView statusView in StatusEffectViews)
+    {
+      if (statusView.TargetStatusEffect == null)
+      {
+        Destroy(statusView.gameObject);
+      }
+      else
+      {
+        next.Enqueue(statusView);
+      }
+    }
+    StatusEffectViews = next;
   }
 }
