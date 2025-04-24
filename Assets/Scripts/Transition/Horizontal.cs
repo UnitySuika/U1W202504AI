@@ -15,10 +15,10 @@ public class Horizontal : TransitionMotionObject
   public override async UniTask PlayTransitionMotion(string nextSceneName, CancellationToken token)
   {
     token = CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy()).Token;
-    await image.DOAnchorPosX(0f, 1.5f).WithCancellation(token);
+    await image.DOAnchorPosX(0f, 1f).WithCancellation(token);
     token.ThrowIfCancellationRequested();
     SceneManager.LoadScene(nextSceneName);
-    await image.DOAnchorPosX(1920f, 1.5f).WithCancellation(token);
+    await image.DOAnchorPosX(1920f, 1f).WithCancellation(token);
     token.ThrowIfCancellationRequested();
   }
 }

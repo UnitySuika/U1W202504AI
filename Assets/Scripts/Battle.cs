@@ -30,6 +30,8 @@ public class Battle
 
   public Character MainCharacter { get; private set; }
 
+  public Card SpecialCard { get; private set; }
+
   public Battle(Character mainCharacter, EnemySource[] enemySources, int minEnemyNumber, int maxEnemyNumber, Deck deck)
   {
     State = States.Main;
@@ -122,5 +124,16 @@ public class Battle
   public void ReturnStackToDeck()
   {
     CStack.ReturnToDeck();
+  }
+
+  public void CardToSpecial(Card card)
+  {
+    Hand.Remove(card);
+    SpecialCard = card;
+  }
+
+  public void DestroySpecialCard()
+  {
+    SpecialCard = null;
   }
 }

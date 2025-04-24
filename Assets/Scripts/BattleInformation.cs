@@ -9,6 +9,8 @@ public static class BattleInformation
   
   public static Deck Deck;
 
+  public static List<CardSource> CardSources;
+
   public static void Initialize()
   {
     FloorNumber = 1;

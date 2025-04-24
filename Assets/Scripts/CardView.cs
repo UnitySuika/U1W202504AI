@@ -23,6 +23,9 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
   private Image barImage;
 
   [SerializeField]
+  private Image baseImage;
+
+  [SerializeField]
   private Button cardButton;
 
   [SerializeField]
@@ -31,11 +34,16 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
   [SerializeField]
   private TextMeshProUGUI energyCostText;
 
+  /*
   [SerializeField]
   private TextMeshProUGUI loveCostText;
+  */
   
   [SerializeField]
   private TextMeshProUGUI loveText;
+
+  [SerializeField]
+  private Color specialColor;
 
   public Card ViewCard { get; private set; }
 
@@ -69,12 +77,20 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
   private RectTransform parentRectTransformMoving;
 
-  public void Initialize(Card card, BattleSceneManager battleSceneManager, RectTransform parentMoving)
+  private bool isTukami = false;
+
+  public void Initialize(Card card, BattleSceneManager battleSceneManager, RectTransform parentMoving, bool isSpecial = false)
   {
     rectTransform = GetComponent<RectTransform>();
     parentRectTransform = (RectTransform)rectTransform.parent;
     parentRectTransformMoving = parentMoving;
     mainCamera = Camera.main;
+
+    if (isSpecial)
+    {
+      baseImage.color = specialColor;
+      loveText.transform.parent.gameObject.SetActive(false);
+    }
 
     ViewCard = card;
     this.battleSceneManager = battleSceneManager;
@@ -97,9 +113,9 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
   public void Set(Card card)
   {
     nameText.text = card.Source.Id;
-    effectText.text = card.Source.EffectDescription;
+    effectText.text = card.EffectDescription;
     energyCostText.text = card.Energy.ToString();
-    loveCostText.text = card.LoveCost.ToString();
+    //loveCostText.text = card.LoveCost.ToString();
   }
 
   public void SetLove(int loveNumber)
@@ -150,29 +166,12 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
   {
     if (!isValid) return;
 
-    if (isPointerOn && ViewCard.Energy <= battleSceneManager.CurrentBattle.Energy)
+    if (isTukami)
     {
-      if (Input.GetMouseButtonDown(0))
-      {
-        if (ViewCard.CardType == Card.CardTargetTypes.ForEnemy)
-        {
-          foreach (EnemyView enemyView in battleSceneManager.EnemyViews)
-          {
-            enemyView.Validate();
-          }
-        }
-        else if (ViewCard.CardType == Card.CardTargetTypes.Normal)
-        {
-          battleSceneManager.BattlePlayArea.Validate();
-        }
-        rectTransform.SetParent(parentRectTransformMoving);
-        AudioManager.Instance.PlaySe("card_get", false);
-      }
-      
       if (Input.GetMouseButton(0))
       {
         // 掴み状態
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRectTransform, Input.mousePosition, mainCamera, out Vector2 mousePos);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRectTransformMoving, Input.mousePosition, mainCamera, out Vector2 mousePos);
 
         rectTransform.anchoredPosition = mousePos;
       }
@@ -183,6 +182,10 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         if (battleSceneManager.BattlePlayArea.IsPointerOn)
         {
           battleSceneManager.OnPlayCard(ViewCard, new Card.PlayedData(Card.PlayedData.PlayedTypes.Normal, null));
+        }
+        else if (battleSceneManager.DestroyArea.IsPointerOn)
+        {
+          battleSceneManager.OnPlayCard(ViewCard, new Card.PlayedData(Card.PlayedData.PlayedTypes.Special, null));
         }
         else
         {
@@ -213,8 +216,40 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         {
           battleSceneManager.BattlePlayArea.Invalidate();
         }
+        
+        battleSceneManager.DestroyArea.Invalidate();
 
         rectTransform.SetParent(parentRectTransform);
+
+        isTukami = false;
+      }
+    }
+
+    if (isPointerOn && ViewCard.Energy <= battleSceneManager.CurrentBattle.Energy)
+    {
+      if (Input.GetMouseButtonDown(0))
+      {
+        if (ViewCard.CardType == Card.CardTargetTypes.ForEnemy)
+        {
+          foreach (EnemyView enemyView in battleSceneManager.EnemyViews)
+          {
+            enemyView.Validate();
+          }
+        }
+        else if (ViewCard.CardType == Card.CardTargetTypes.Normal)
+        {
+          battleSceneManager.BattlePlayArea.Validate();
+        }
+
+        if (battleSceneManager.SpecialCardView == null && ViewCard.LoveNumber >= 3)
+        {
+          battleSceneManager.DestroyArea.Validate();
+        }
+
+        rectTransform.SetParent(parentRectTransformMoving);
+        AudioManager.Instance.PlaySe("card_get", false);
+
+        isTukami = true;
       }
     }
   }

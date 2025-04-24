@@ -15,7 +15,9 @@ MonoBehaviour:
   Id: "\u56DE\u5FA9\u30AB\u30FC\u30C9"
   Energy: 1
   CardType: 0
-  Parameters: []
-  EffectDescription: "HP\u309210\u56DE\u5FA9\u3059\u308B"
-  EffectCLANG: heal ( 10 )
+  Parameters:
+  - Id: HEAL
+    Value: 10
+  EffectDescription: "HP\u3092{HEAL}\u56DE\u5FA9\u3059\u308B"
+  EffectCLANG: heal ( HEAL )
   LoveCost: 3

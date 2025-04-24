@@ -16,3 +16,5 @@ MonoBehaviour:
   Parameters:
   - Id: max_hp
     Value: 10
+  - Id: ATK
+    Value: 5

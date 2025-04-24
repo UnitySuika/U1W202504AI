@@ -15,10 +15,10 @@ public class FadeNormal : TransitionMotionObject
   public override async UniTask PlayTransitionMotion(string nextSceneName, CancellationToken token)
   {
     token = CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy()).Token;
-    await fadeImage.DOFade(1f, 2f).WithCancellation(token);
+    await fadeImage.DOFade(1f, 1f).WithCancellation(token);
     token.ThrowIfCancellationRequested();
     SceneManager.LoadScene(nextSceneName);
-    await fadeImage.DOFade(0f, 2f).WithCancellation(token);
+    await fadeImage.DOFade(0f, 1f).WithCancellation(token);
     token.ThrowIfCancellationRequested();
   }
 }

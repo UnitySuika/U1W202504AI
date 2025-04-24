@@ -37,10 +37,13 @@ public class BattleSceneManager : MonoBehaviour
   private HandView handView;
   
   [SerializeField]
-  private CardSource[] initialCardSources;
+  private List<CardSource> cardSources;
 
   [SerializeField]
   private PlayArea playArea;
+  
+  [SerializeField]
+  private PlayArea destroyArea;
   
   [SerializeField]
   private CharacterView characterView;
@@ -53,6 +56,9 @@ public class BattleSceneManager : MonoBehaviour
   
   [SerializeField]
   private GameObject loseView;
+  
+  [SerializeField]
+  private GameObject cardLostView;
 
   [SerializeField]
   private TurnView turnView;
@@ -67,6 +73,7 @@ public class BattleSceneManager : MonoBehaviour
   private TextMeshProUGUI turnText;
 
   public PlayArea BattlePlayArea => playArea;
+  public PlayArea DestroyArea => destroyArea;
 
   public List<EnemyView> EnemyViews { get; private set; }
 
@@ -75,21 +82,53 @@ public class BattleSceneManager : MonoBehaviour
   private Card playedCard = null;
   private Card.PlayedData playedData = null;
 
+  [SerializeField]
+  private CardView cardViewPrefab;
+  
+  [SerializeField]
+  private RectTransform specialCardViewParent;
+  
+  [SerializeField]
+  private RectTransform cardViewParentMoving;
+
+  [SerializeField]
+  private int ClearFloor;
+
+  public CardView SpecialCardView { get; private set; }
+
   private void BattleInitialize()
   {
     Deck deck;
     if (BattleInformation.FloorNumber == 1)
     {
       deck = new Deck();
-      foreach (CardSource cardSource in initialCardSources)
+
+      for (int i = 0; i < 5; ++i)
       {
-        deck.Add(new Card(cardSource));
+        int random = UnityEngine.Random.Range(0, cardSources.Count);
+        CardSource source = cardSources[random];
+        cardSources.RemoveAt(random);
+        deck.Add(new Card(source));
       }
+
+      BattleInformation.CardSources = cardSources;
+      BattleInformation.Deck = deck;
     }
     else
     {
+      cardSources = BattleInformation.CardSources;
       deck = BattleInformation.Deck;
+
+      if (cardSources.Count > 0)
+      {
+        int random = UnityEngine.Random.Range(0, cardSources.Count);
+        CardSource source = cardSources[random];
+        cardSources.RemoveAt(random);
+        deck.Add(new Card(source));
+      }
     }
+
+    Debug.Log(BattleInformation.Deck.GetClone().Count);
 
     Character character = new Character("冒険者", 50);
     
@@ -274,25 +313,71 @@ public class BattleSceneManager : MonoBehaviour
           cardView.Invalidate();
         }
         
+        turnView.Invalidate();
+
+        if (playedData.PlayedType == Card.PlayedData.PlayedTypes.Special)
+        {
+          CurrentBattle.CardToSpecial(playedCard);
+          await handView.RemoveCard(playedCard, true, this.GetCancellationTokenOnDestroy());
+          token.ThrowIfCancellationRequested();
+          
+          playedCard.Enhance(5);
+
+          CardView cardView = Instantiate(cardViewPrefab, specialCardViewParent);
+          cardView.Initialize(playedCard, this, cardViewParentMoving, true);
+          cardView.Validate();
+          cardView.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+          playedCard = null;
+          SpecialCardView = cardView;
+          continue;
+        }
+        
         BattleEventQueue beq = new BattleEventQueue();
         playedCard.PlayEffect(CurrentBattle, playedData, beq);
 
-        turnView.Invalidate();
+        if (SpecialCardView != null)
+        {
+          CurrentBattle.DestroySpecialCard();
+          await SpecialCardView.Erase(true, token);
+          token.ThrowIfCancellationRequested();
 
-        await handView.RemoveCard(playedCard, true, this.GetCancellationTokenOnDestroy());
+          await PlayBattleEventQueue(beq, token);
+          token.ThrowIfCancellationRequested();
 
-        await PlayBattleEventQueue(beq, token);
+          SpecialCardView = null;
+          
+          turnView.Validate();
 
-        turnView.Validate();
+          CurrentBattle.UpdateStatus();
+        }
+        else 
+        {
+          await handView.RemoveCard(playedCard, true, this.GetCancellationTokenOnDestroy());
+          token.ThrowIfCancellationRequested();
 
-        CurrentBattle.UpdateStatus();
+          await PlayBattleEventQueue(beq, token);
+          token.ThrowIfCancellationRequested();
 
-        CurrentBattle.Hand.Remove(playedCard);
-        CurrentBattle.CStack.InsertBottom(playedCard);
+          turnView.Validate();
+
+          CurrentBattle.UpdateStatus();
+
+          CurrentBattle.Hand.Remove(playedCard);
+          CurrentBattle.CStack.InsertBottom(playedCard);
+        }
 
         energyView.Set(CurrentBattle.Energy);
 
-        if (CheckGameState()) return;
+        bool isAllRemoved = CurrentBattle.Hand.Count + CurrentBattle.CStack.Cards.Count == 0;
+        if ((!isAllRemoved || BattleInformation.FloorNumber == ClearFloor - 1) && CheckGameState()) return;
+
+        if (isAllRemoved)
+        {
+          cardLostView.SetActive(true);
+          turnView.Invalidate();
+          CardLost(token).Forget();
+          return;
+        }
 
         playedCard = null;
         
@@ -405,10 +490,19 @@ public class BattleSceneManager : MonoBehaviour
 
     await UniTask.Delay(1000, cancellationToken: token);
     token.ThrowIfCancellationRequested();
-    TransitionMotionManager.Instance.PlayTransitionMotion("Battle", TransitionMotionManager.TransitionMotionTypes.FadeNormal).Forget();
+    string nextScene = BattleInformation.FloorNumber == ClearFloor ? "Clear" : "Battle";
+    TransitionMotionManager.Instance.PlayTransitionMotion(nextScene, TransitionMotionManager.TransitionMotionTypes.FadeNormal).Forget();
   }
 
   private async UniTask LoseTask(CancellationToken token)
+  {
+    AudioManager.Instance.StopBgm();
+    await UniTask.Delay(1000, cancellationToken: token);
+    token.ThrowIfCancellationRequested();
+    TransitionMotionManager.Instance.PlayTransitionMotion("Lose", TransitionMotionManager.TransitionMotionTypes.FadeNormal).Forget();
+  }
+
+  private async UniTask CardLost(CancellationToken token)
   {
     AudioManager.Instance.StopBgm();
     await UniTask.Delay(1000, cancellationToken: token);

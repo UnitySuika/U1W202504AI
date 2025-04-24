@@ -18,7 +18,7 @@ public class EnemySource : ScriptableObject
       return (battle, enemy) =>
       {
         Queue<EnemyActionData> actions = new Queue<EnemyActionData>();
-        actions.Enqueue(new EnemyActionData(EnemyActionTypes.Attack, 50));
+        actions.Enqueue(new EnemyActionData(EnemyActionTypes.Attack, Array.Find(Parameters, param => param.Id == "ATK").Value));
         return actions;
       };
     }
@@ -27,7 +27,7 @@ public class EnemySource : ScriptableObject
       return (battle, enemy) =>
       {
         Queue<EnemyActionData> actions = new Queue<EnemyActionData>();
-        actions.Enqueue(new EnemyActionData(EnemyActionTypes.Heal, 5));
+        actions.Enqueue(new EnemyActionData(EnemyActionTypes.Heal, Array.Find(Parameters, param => param.Id == "HEAL").Value));
         
         bool isContainDefenceUpSE = false;
         foreach (StatusEffect statusEffect in enemy.StatusEffects)
@@ -39,7 +39,7 @@ public class EnemySource : ScriptableObject
         }
         if (!isContainDefenceUpSE)
         {
-          actions.Enqueue(new EnemyActionData(EnemyActionTypes.Defend, 10));
+          actions.Enqueue(new EnemyActionData(EnemyActionTypes.Defend, Array.Find(Parameters, param => param.Id == "DEFEND").Value));
         }
 
         return actions;

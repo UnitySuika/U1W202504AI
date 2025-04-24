@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Card
@@ -30,6 +31,12 @@ public class Card
   {
     public string Id;
     public int Value;
+
+    public Parameter(string id, int value)
+    {
+      Id = id; 
+      Value = value;
+    }
   }
 
   public enum CardTargetTypes
@@ -54,15 +61,62 @@ public class Card
 
   public int LoveNumber { get; private set; }
 
+  public string EffectDescription { get; private set; }
+
+  public void SetEffectDescription()
+  {
+    EffectDescription = "";
+    bool isReading = false;
+    string reading = "";
+    for (int i = 0; i < Source.EffectDescription.Length; ++i)
+    {
+      char c = Source.EffectDescription[i];
+      if (c == '{')
+      {
+        isReading = true;
+        reading = "";
+      }
+      else if (c == '}')
+      {
+        isReading = false;
+        foreach (Parameter parameter in Parameters)
+        {
+          if (reading == parameter.Id)
+          {
+            EffectDescription += $" {parameter.Value} ";
+          }
+        }
+      }
+      else if (isReading)
+      {
+        reading += c;
+      }
+      else
+      {
+        EffectDescription += c;
+      }
+    }
+  }
+
   public Card(CardSource source)
   {
     Source = source;
     Energy = source.Energy;
     CardType = source.CardType;
-    Parameters = source.Parameters;
+
+    Parameters = new Parameter[source.Parameters.Length];
+    for (int i = 0; i < source.Parameters.Length; ++i)
+    {
+      Parameter param = source.Parameters[i];
+      Parameters[i] = new Parameter(param.Id, param.Value);
+    }
+    
     EffectObject = CardUtility.CardLangToObject(source.EffectCLANG);
     RandomNumber = UnityEngine.Random.Range(0, 10);
     LoveCost = source.LoveCost;
+
+    SetEffectDescription();
+
     // Debug.Log(CardUtility.JsonExpressionToString(Effect));
   }
 
@@ -137,6 +191,13 @@ public class Card
           case "PLAYER_HP":
             return battle.MainCharacter.Hp.ToString();
           default:
+            foreach (Parameter parameter in Parameters)
+            {
+              if (parameter.Id == value)
+              {
+                return parameter.Value.ToString();
+              }
+            }
             return value;
         }
       default:
@@ -173,5 +234,15 @@ public class Card
   public void AddLove()
   {
     ++LoveNumber;
+  }
+
+  public void Enhance(int ratio)
+  {
+    foreach (Parameter parameter in Parameters)
+    {
+      parameter.Value *= ratio;
+    }
+
+    SetEffectDescription();
   }
 }
