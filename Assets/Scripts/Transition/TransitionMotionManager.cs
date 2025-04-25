@@ -6,7 +6,6 @@ using UnityEngine.SceneManagement;
 using Cysharp.Threading.Tasks;
 using System.Threading;
 using System;
-using UnityEditorInternal;
 
 public class TransitionMotionManager : MonoBehaviour
 {
