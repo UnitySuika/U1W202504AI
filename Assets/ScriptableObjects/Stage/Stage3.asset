@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90cc3061b8d70dd42aa9c9b350a5fdea, type: 3}
+  m_Name: Stage3
+  m_EditorClassIdentifier: 
+  EnemyNumberMin: 3
+  EnemyNumberMax: 3
+  SelectiveEnemies:
+  - {fileID: 11400000, guid: 7f635d1713c2d9e43a7503c7b83ca463, type: 2}
+  - {fileID: 11400000, guid: 394ed8e421992b24f919a4f3770f73b7, type: 2}
+  - {fileID: 11400000, guid: d3878199a05f08048b5da6fdee5a97b6, type: 2}

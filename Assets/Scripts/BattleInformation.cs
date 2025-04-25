@@ -11,6 +11,8 @@ public static class BattleInformation
 
   public static List<CardSource> CardSources;
 
+  public static int CharacterHp;
+
   public static void Initialize()
   {
     FloorNumber = 1;

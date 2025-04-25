@@ -65,6 +65,8 @@ public class Enemy
 
   public List<StatusEffect> StatusEffects;
 
+  public int Turn { get; private set; }
+
   public Enemy(EnemySource source)
   {
     Source = source;
@@ -73,6 +75,7 @@ public class Enemy
     MaxHp = Array.Find(Parameters, param => param.Id == "max_hp").Value;
     Hp = MaxHp;
     StatusEffects = new List<StatusEffect>();
+    Turn = 0;
   }
 
   public void SetNextActionData(Battle battle)
@@ -171,5 +174,7 @@ public class Enemy
       }
     }
     StatusEffects = nextStatusEffects;
+
+    ++Turn;
   }
 }

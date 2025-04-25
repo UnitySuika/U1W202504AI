@@ -98,6 +98,10 @@ public static class CardUtility
           je.Elements.Add("type", new JsonExpression("conditional"));
           next.Enqueue((je, "condition", phraseList[1]));
           next.Enqueue((je, "then", phraseList[3]));
+          if (phraseList.Count >= 4)
+          {
+            next.Enqueue((je, "else", phraseList[5]));
+          }
         }
         else if (phraseList[1].Count == 1 && phraseList[1][0] == ">")
         {
@@ -115,6 +119,11 @@ public static class CardUtility
         else if (phraseList[0].Count == 1 && phraseList[0][0] == "attack")
         {
           je.Elements.Add("type", new JsonExpression("attack"));
+          next.Enqueue((je, "value", phraseList[1]));
+        }
+        else if (phraseList[0].Count == 1 && phraseList[0][0] == "all_attack")
+        {
+          je.Elements.Add("type", new JsonExpression("all_attack"));
           next.Enqueue((je, "value", phraseList[1]));
         }
         else if (phraseList[0].Count == 1 && phraseList[0][0] == "heal")

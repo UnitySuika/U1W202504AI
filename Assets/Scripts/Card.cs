@@ -150,8 +150,17 @@ public class Card
         {
           return PlayEffectRecursive(je.Elements["then"], battle, playedData, beq);
         }
-
-        break;
+        else
+        {
+          if (je.Elements.ContainsKey("else"))
+          {
+            return PlayEffectRecursive(je.Elements["else"], battle, playedData, beq);
+          }
+          else
+          {
+            return "NULL";
+          }
+        }
       case "comparison_greater":
         int l1 = int.Parse(PlayEffectRecursive(je.Elements["left"], battle, playedData, beq));
         int r1 = int.Parse(PlayEffectRecursive(je.Elements["right"], battle, playedData, beq));
@@ -167,6 +176,15 @@ public class Card
         bool isDead = playedData.SelectedEnemy.ReceiveDamage(attackValue, beq);
 
         return isDead ? "TRUE" : "FALSE";
+      case "all_attack":
+        int attackValue2 = int.Parse(PlayEffectRecursive(je.Elements["value"], battle, playedData, beq));
+
+        foreach (Enemy enemy in battle.Enemies)
+        {
+          enemy.ReceiveDamage(attackValue2, beq);
+        }
+
+        return "NULL";
       case "heal":
         int healValue = int.Parse(PlayEffectRecursive(je.Elements["value"], battle, playedData, beq));
         
@@ -194,7 +212,7 @@ public class Card
         int existCount = 0;
         foreach (Card card in battle.Hand)
         {
-          if (card.Source.Id.Contains(included))
+          if (card.Source.EffectDescription.Contains(included))
           {
             ++existCount;
           }
@@ -206,6 +224,8 @@ public class Card
         {
           case "PLAYER_HP":
             return battle.MainCharacter.Hp.ToString();
+          case "PLAYER_MAXHP_HALF":
+            return (battle.MainCharacter.MaxHp / 2).ToString();
           default:
             foreach (Parameter parameter in Parameters)
             {

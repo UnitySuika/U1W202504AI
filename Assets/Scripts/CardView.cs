@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class CardView : MonoBehaviour
 {
   [SerializeField]
   private TextMeshProUGUI nameText;
@@ -123,6 +123,8 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     loveText.text = loveNumber.ToString();
   }
 
+  /*
+
   public void OnPointerEnter(PointerEventData eventData)
   {
     if (!isValid) return;
@@ -137,6 +139,8 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     frameImage.color = Color.white;
     barImage.color = Color.white;
   }
+
+  */
 
   public async UniTask MoveAlpha(float originAlpha, float targetAlpha, float seconds, CancellationToken token)
   {
@@ -166,14 +170,33 @@ public class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
   {
     if (!isValid) return;
 
+    RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRectTransform, Input.mousePosition, mainCamera, out Vector2 mousePos);
+
+    Vector2 ap = rectTransform.anchoredPosition;
+    if (mousePos.x > ap.x - rectTransform.sizeDelta.x / 2f && 
+        mousePos.x < ap.x + rectTransform.sizeDelta.x / 2f &&
+        mousePos.y > ap.y - rectTransform.sizeDelta.y / 2f && 
+        mousePos.y < ap.y + rectTransform.sizeDelta.y / 2f)
+    {
+      isPointerOn = true;
+      frameImage.color = Color.blue;
+      barImage.color = Color.blue;
+    }
+    else
+    {
+      isPointerOn = false;
+      frameImage.color = Color.white;
+      barImage.color = Color.white;
+    }
+
     if (isTukami)
     {
       if (Input.GetMouseButton(0))
       {
         // 掴み状態
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRectTransformMoving, Input.mousePosition, mainCamera, out Vector2 mousePos);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRectTransformMoving, Input.mousePosition, mainCamera, out Vector2 mp);
 
-        rectTransform.anchoredPosition = mousePos;
+        rectTransform.anchoredPosition = mp;
       }
       
       if (Input.GetMouseButtonUp(0))

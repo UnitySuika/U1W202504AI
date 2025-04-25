@@ -12,14 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 279d27ee54c1bd24bb954586d9e1f040, type: 3}
   m_Name: DefenceUp
   m_EditorClassIdentifier: 
-  Id: "\u9632\u5FA1"
+  Id: "\u30D0\u30EA\u30FC"
   Energy: 1
   CardType: 0
   Parameters:
   - Id: DEFENCE_UP
-    Value: 5
+    Value: 2
   - Id: DEFENCE_UP_TURN
     Value: 1
-  EffectDescription: "{DEFENCE_UP_TURN}\u30BF\u30FC\u30F3\u3001{DEFENCE_UP}\u306E\u9632\u5FA1\u3092\u3059\u308B"
+  EffectDescription: "{DEFENCE_UP_TURN}\u30BF\u30FC\u30F3\u306E\u9593\u3001\u9632\u5FA1\u529B\u3092{DEFENCE_UP}\u4E0A\u3052\u308B"
   EffectCLANG: defence_up ( DEFENCE_UP ) ( DEFENCE_UP_TURN )
   LoveCost: 0

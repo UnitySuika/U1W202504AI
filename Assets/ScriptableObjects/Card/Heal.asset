@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 279d27ee54c1bd24bb954586d9e1f040, type: 3}
   m_Name: Heal
   m_EditorClassIdentifier: 
-  Id: "\u56DE\u5FA9\u30AB\u30FC\u30C9"
-  Energy: 1
+  Id: "\u30D2\u30A4\u30ED"
+  Energy: 2
   CardType: 0
   Parameters:
   - Id: HEAL
-    Value: 10
+    Value: 4
   EffectDescription: "HP\u3092{HEAL}\u56DE\u5FA9\u3059\u308B"
   EffectCLANG: heal ( HEAL )
-  LoveCost: 3
+  LoveCost: 0

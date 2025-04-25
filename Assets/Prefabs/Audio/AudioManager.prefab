@@ -88,6 +88,12 @@ MonoBehaviour:
     Clip: {fileID: 8300000, guid: 13ec68c65e076784393cabd97c9d11ee, type: 3}
   - Id: clear
     Clip: {fileID: 8300000, guid: 734b8f22794c7884ba804afbb7414734, type: 3}
+  - Id: next_page
+    Clip: {fileID: 8300000, guid: 5b18ac3250312b54ba8bea7e01c7da1a, type: 3}
+  - Id: enemy_damage
+    Clip: {fileID: 8300000, guid: c463e1503ff693242a45901d311097f7, type: 3}
+  - Id: enemy_action
+    Clip: {fileID: 8300000, guid: 458c0375d2027e142a6c128660f1c991, type: 3}
 --- !u!82 &556833902708127827
 AudioSource:
   m_ObjectHideFlags: 0

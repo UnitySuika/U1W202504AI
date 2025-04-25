@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 279d27ee54c1bd24bb954586d9e1f040, type: 3}
   m_Name: Attack
   m_EditorClassIdentifier: 
-  Id: "\u653B\u6483\u30AB\u30FC\u30C9"
+  Id: "\u30EC\u30AA\u30EB"
   Energy: 1
   CardType: 1
   Parameters:
   - Id: ATK
     Value: 3
-  EffectDescription: "\u6575\u306B{ATK}\u306E\u30C0\u30E1\u30FC\u30B8\u3092\u4E0E\u3048\u308B"
+  EffectDescription: "\u6575\u306B{ATK}\u306E\u653B\u6483"
   EffectCLANG: attack ( ATK )
-  LoveCost: 2
+  LoveCost: 0

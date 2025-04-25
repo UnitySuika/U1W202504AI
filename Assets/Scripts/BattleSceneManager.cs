@@ -13,13 +13,7 @@ using UnityEngine.UI;
 public class BattleSceneManager : MonoBehaviour
 {
   [SerializeField]
-  private EnemySource[] enemySources;
-
-  [SerializeField]
-  private int minEnemyNumber;
-
-  [SerializeField]
-  private int maxEnemyNumber;
+  private StageSource[] stageSources;
 
   [SerializeField]
   private EnemyView enemyViewPrefab;
@@ -37,7 +31,10 @@ public class BattleSceneManager : MonoBehaviour
   private HandView handView;
   
   [SerializeField]
-  private List<CardSource> cardSources;
+  private List<CardSource> selectiveCardSources;
+  
+  [SerializeField]
+  private List<CardSource> initialCardSources;
 
   [SerializeField]
   private PlayArea playArea;
@@ -103,34 +100,42 @@ public class BattleSceneManager : MonoBehaviour
     {
       deck = new Deck();
 
-      for (int i = 0; i < 5; ++i)
+      for (int i = 0; i < initialCardSources.Count; ++i)
       {
-        int random = UnityEngine.Random.Range(0, cardSources.Count);
-        CardSource source = cardSources[random];
-        cardSources.RemoveAt(random);
-        deck.Add(new Card(source));
+        deck.Add(new Card(initialCardSources[i]));
       }
 
-      BattleInformation.CardSources = cardSources;
+      BattleInformation.CardSources = selectiveCardSources;
       BattleInformation.Deck = deck;
     }
     else
     {
-      cardSources = BattleInformation.CardSources;
+      selectiveCardSources = BattleInformation.CardSources;
       deck = BattleInformation.Deck;
 
-      if (cardSources.Count > 0)
+      if (selectiveCardSources.Count > 0)
       {
-        int random = UnityEngine.Random.Range(0, cardSources.Count);
-        CardSource source = cardSources[random];
-        cardSources.RemoveAt(random);
+        int random = UnityEngine.Random.Range(0, selectiveCardSources.Count);
+        CardSource source = selectiveCardSources[random];
+        selectiveCardSources.RemoveAt(random);
         deck.Add(new Card(source));
       }
     }
 
-    Character character = new Character("冒険者", 50);
+    int hp;
+    if (BattleInformation.FloorNumber == 1)
+    {
+      hp = 15;
+    }
+    else 
+    {
+      hp = BattleInformation.CharacterHp;
+    }
+    Character character = new Character("護衛対象", 15);
+    character.SetHp(hp);
     
-    CurrentBattle = new Battle(character, enemySources, minEnemyNumber, maxEnemyNumber, deck);
+    int f = BattleInformation.FloorNumber - 1;
+    CurrentBattle = new Battle(character, stageSources[f].SelectiveEnemies, stageSources[f].EnemyNumberMin, stageSources[f].EnemyNumberMax, deck);
 
     characterView.Set(character);
     
@@ -153,7 +158,7 @@ public class BattleSceneManager : MonoBehaviour
 
   private async UniTask PlayerTurnInitialize(CancellationToken token)
   {
-    CurrentBattle.SetEnergy(2);
+    CurrentBattle.SetEnergy(3);
     energyView.Set(CurrentBattle.Energy);
     CurrentBattle.MainCharacter.AdvanceTurn();
     await characterView.UpdateStatusEffects(token);
@@ -281,7 +286,7 @@ public class BattleSceneManager : MonoBehaviour
   {
     AudioManager.Instance.PlaySe("battle_start", false);
     floorView.gameObject.SetActive(true);
-    floorText.text = $"地下 {BattleInformation.FloorNumber} 階";
+    floorText.text = $"ステージ {BattleInformation.FloorNumber}";
     turnText.text = $"{BattleInformation.TurnSum} ターン経過";
     await UniTask.Delay(3000, cancellationToken: token);
     token.ThrowIfCancellationRequested();
@@ -305,6 +310,16 @@ public class BattleSceneManager : MonoBehaviour
       {
         if (playedCard == null)
         {
+          if (isAllDestroy)
+          {
+            foreach (Enemy enemy in CurrentBattle.Enemies)
+            {
+              enemy.ReceiveDamage(1000, new BattleEventQueue());
+            }
+            CurrentBattle.UpdateStatus();
+            CheckGameState();
+            return;
+          }
           if (CurrentBattle.Turn == Battle.Turns.Enemy) break;
           await UniTask.Yield(PlayerLoopTiming.Update, token);
           token.ThrowIfCancellationRequested();
@@ -325,7 +340,7 @@ public class BattleSceneManager : MonoBehaviour
           await handView.RemoveCard(playedCard, true, this.GetCancellationTokenOnDestroy());
           token.ThrowIfCancellationRequested();
           
-          playedCard.Enhance(5);
+          playedCard.Enhance(3);
 
           CardView cardView = Instantiate(cardViewPrefab, specialCardViewParent);
           cardView.Initialize(playedCard, this, cardViewParentMoving, true);
@@ -402,6 +417,11 @@ public class BattleSceneManager : MonoBehaviour
       for (int i = 0; i < handNumber; ++i)
       {
         CurrentBattle.InsertCard(CurrentBattle.Hand[0]);
+      }
+
+      foreach (CardView cView in handView.CardViews)
+      {
+        cView.Invalidate();
       }
 
       for (int i = 0; i < handNumber; ++i)
@@ -508,6 +528,7 @@ public class BattleSceneManager : MonoBehaviour
 
   private async UniTask CardLost(CancellationToken token)
   {
+    BattleInformation.CharacterHp = CurrentBattle.MainCharacter.Hp;
     AudioManager.Instance.StopBgm();
     await UniTask.Delay(1000, cancellationToken: token);
     token.ThrowIfCancellationRequested();
@@ -519,6 +540,7 @@ public class BattleSceneManager : MonoBehaviour
     CurrentBattle.EvaluateState();
     if (CurrentBattle.State == Battle.States.Win)
     {
+      BattleInformation.CharacterHp = CurrentBattle.MainCharacter.Hp;
       winView.SetActive(true);
       foreach (CardView cardView in handView.CardViews)
       {
@@ -530,6 +552,7 @@ public class BattleSceneManager : MonoBehaviour
     }
     else if (CurrentBattle.State == Battle.States.Lose)
     {
+      BattleInformation.CharacterHp = CurrentBattle.MainCharacter.Hp;
       loseView.SetActive(true);
       foreach (CardView cardView in handView.CardViews)
       {
@@ -546,5 +569,12 @@ public class BattleSceneManager : MonoBehaviour
   {
     playedCard = card;
     this.playedData = playedData;
+  }
+
+  private bool isAllDestroy = false;
+
+  public void AllDestroy()
+  {
+    isAllDestroy = true;
   }
 }

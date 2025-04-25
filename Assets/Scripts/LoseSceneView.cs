@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using unityroom.Api;
 
 public class LoseSceneView : MonoBehaviour
 {
@@ -16,6 +17,7 @@ public class LoseSceneView : MonoBehaviour
   {
     floorNumberText.text = $"{BattleInformation.FloorNumber} 階まで到達した！";
     turnSumText.text = $"経過ターン数： {BattleInformation.TurnSum}";
+    UnityroomApiClient.Instance.SendScore(1, BattleInformation.FloorNumber - 1, ScoreboardWriteMode.HighScoreDesc);
   }
 
   public void NextGameButton()

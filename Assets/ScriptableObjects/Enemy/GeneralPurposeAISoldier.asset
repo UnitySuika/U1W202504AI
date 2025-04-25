@@ -17,7 +17,7 @@ MonoBehaviour:
   - Id: max_hp
     Value: 5
   - Id: ATK
-    Value: 3
+    Value: 4
   - Id: DEFEND
     Value: 2
   - Id: DEFEND_TURN

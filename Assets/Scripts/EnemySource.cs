@@ -63,6 +63,45 @@ public class EnemySource : ScriptableObject
         return actions;
       };
     }
+    else if (Id == "自動修復AI兵")
+    {
+      return (battle, enemy) => 
+      {
+        Queue<EnemyActionData> actions = new Queue<EnemyActionData>();
+
+        if (enemy.Hp <= enemy.MaxHp / 2)
+        {
+          actions.Enqueue(new EnemyActionData(EnemyActionTypes.Heal, Array.Find(enemy.Parameters, param => param.Id == "HEAL").Value));
+        }
+        else
+        {
+          if (enemy.Turn % 3 == 0)
+          {
+            actions.Enqueue(new EnemyActionData(EnemyActionTypes.Attack, Array.Find(enemy.Parameters, param => param.Id == "ATK").Value));
+          }
+          else
+          {
+            actions.Enqueue(new EnemyActionData(EnemyActionTypes.Defend, Array.Find(enemy.Parameters, param => param.Id == "DEFEND").Value));
+          }
+        }
+
+        return actions;
+      };
+    }
+    else if (Id == "AI砲兵")
+    {
+      return (battle, enemy) => 
+      {
+        Queue<EnemyActionData> actions = new Queue<EnemyActionData>();
+
+        if ((enemy.Turn + 1) % 4 == 0)
+        {
+          actions.Enqueue(new EnemyActionData(EnemyActionTypes.Attack, Array.Find(enemy.Parameters, param => param.Id == "ATK").Value));
+        }
+
+        return actions;
+      };
+    }
     else
     {
       return (battle, enemy) => 

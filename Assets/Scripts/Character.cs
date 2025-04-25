@@ -54,6 +54,11 @@ public class Character
     }
   }
 
+  public void SetHp(int value)
+  {
+    Hp = value;
+  }
+
   public void Heal(int healValue, BattleEventQueue beq)
   {
     Hp = Mathf.Min(MaxHp, Hp + healValue);

@@ -201,7 +201,7 @@ public class EnemyView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
   {
     CancellationTokenSource.CreateLinkedTokenSource(token, this.GetCancellationTokenOnDestroy());
 
-    AudioManager.Instance.PlaySe("monster", false);
+    AudioManager.Instance.PlaySe("enemy_action", false);
 
     EnemyActionView actionView = enemyActionViews.Dequeue();
 
@@ -234,7 +234,7 @@ public class EnemyView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
 
     Set(TargetEnemy);
     
-    AudioManager.Instance.PlaySe("damaged", false);
+    AudioManager.Instance.PlaySe("enemy_damage", false);
 
     await GetComponent<RectTransform>().DOShakeAnchorPos(0.5f, 10)
       .SetEase(Ease.OutSine)
