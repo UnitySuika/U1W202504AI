@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -10,6 +11,9 @@ public class PlayArea : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
   [SerializeField]
   private Image image;
+
+  [SerializeField]
+  private TextMeshProUGUI descriptionText;
 
   [SerializeField]
   private RectTransform rectTransform;
@@ -32,12 +36,16 @@ public class PlayArea : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
   public void Validate()
   {
     IsValid = true;
+    Debug.Log(descriptionText);
+    Debug.Log(descriptionText.gameObject);
+    descriptionText.gameObject.SetActive(true);
     image.DOFade(0.25f, 0.25f);
   }
   public void Invalidate()
   {
     IsValid = false;
     IsPointerOn = false;
+    descriptionText.gameObject.SetActive(false);
     image.DOFade(0f, 0.1f);
   }
 

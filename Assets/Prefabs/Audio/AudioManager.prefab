@@ -94,6 +94,8 @@ MonoBehaviour:
     Clip: {fileID: 8300000, guid: c463e1503ff693242a45901d311097f7, type: 3}
   - Id: enemy_action
     Clip: {fileID: 8300000, guid: 458c0375d2027e142a6c128660f1c991, type: 3}
+  - Id: destroy
+    Clip: {fileID: 8300000, guid: c7dce134f477b01419882d36397156f7, type: 3}
 --- !u!82 &556833902708127827
 AudioSource:
   m_ObjectHideFlags: 0

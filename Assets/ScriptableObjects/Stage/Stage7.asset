@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Stage7
   m_EditorClassIdentifier: 
   EnemyNumberMin: 3
-  EnemyNumberMax: 3
+  EnemyNumberMax: 4
   SelectiveEnemies:
   - {fileID: 11400000, guid: 7f635d1713c2d9e43a7503c7b83ca463, type: 2}
   - {fileID: 11400000, guid: d3878199a05f08048b5da6fdee5a97b6, type: 2}

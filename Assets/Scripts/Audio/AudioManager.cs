@@ -168,4 +168,19 @@ public class AudioManager : MonoBehaviour
         _sourceSes[maxTimeIndex].Play();
     }
   }
+
+  public void SetVolume()
+  {
+    AudioListener.volume = PlayerPrefs.GetFloat("master_volume", 0.5f);
+    _defaultVolumeBgm = PlayerPrefs.GetFloat("music_volume", 0.5f);
+    foreach (AudioSource source in _sourceBgms)
+    {
+      source.volume = _defaultVolumeBgm;
+    }
+    _defaultVolumeSe = PlayerPrefs.GetFloat("se_volume", 0.5f);
+    foreach (AudioSource source in _sourceSes)
+    {
+      source.volume = _defaultVolumeSe;
+    }
+  }
 }

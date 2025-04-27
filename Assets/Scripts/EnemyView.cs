@@ -32,6 +32,9 @@ public class EnemyView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
   private Image image;
 
   [SerializeField]
+  private TextMeshProUGUI selectedText;
+
+  [SerializeField]
   private RectTransform rectTransform;
 
   [SerializeField]
@@ -96,12 +99,14 @@ public class EnemyView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
   public void Validate()
   {
     IsValid = true;
+    selectedText.gameObject.SetActive(true);
     image.DOFade(0.25f, 0.25f);
   }
   public void Invalidate()
   {
     IsValid = false;
     IsPointerOn = false;
+    selectedText.gameObject.SetActive(false);
     image.DOFade(0f, 0.1f);
   }
 

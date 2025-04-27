@@ -120,7 +120,15 @@ public class CardView : MonoBehaviour
 
   public void SetLove(int loveNumber)
   {
-    loveText.text = loveNumber.ToString();
+    if (loveNumber < 3)
+    {
+      loveText.text = loveNumber.ToString();
+    }
+    else 
+    {
+      loveText.color = Color.yellow;
+      loveText.text = "MAX";
+    }
   }
 
   /*
@@ -197,6 +205,10 @@ public class CardView : MonoBehaviour
         RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRectTransformMoving, Input.mousePosition, mainCamera, out Vector2 mp);
 
         rectTransform.anchoredPosition = mp;
+
+        Color c = baseImage.color;
+        c.a = 0.75f;
+        baseImage.color = c;
       }
       
       if (Input.GetMouseButtonUp(0))
@@ -245,6 +257,10 @@ public class CardView : MonoBehaviour
         rectTransform.SetParent(parentRectTransform);
 
         isTukami = false;
+
+        Color c = baseImage.color;
+        c.a = 1f;
+        baseImage.color = c;
       }
     }
 

@@ -65,9 +65,15 @@ public class BattleSceneManager : MonoBehaviour
 
   [SerializeField]
   private TextMeshProUGUI floorText;
+  
+  [SerializeField]
+  private TextMeshProUGUI nokoriFloorText;
 
   [SerializeField]
   private TextMeshProUGUI turnText;
+
+  [SerializeField]
+  private CardViewsReference cardViewsReference;
 
   public PlayArea BattlePlayArea => playArea;
   public PlayArea DestroyArea => destroyArea;
@@ -95,32 +101,7 @@ public class BattleSceneManager : MonoBehaviour
 
   private void BattleInitialize()
   {
-    Deck deck;
-    if (BattleInformation.FloorNumber == 1)
-    {
-      deck = new Deck();
-
-      for (int i = 0; i < initialCardSources.Count; ++i)
-      {
-        deck.Add(new Card(initialCardSources[i]));
-      }
-
-      BattleInformation.CardSources = selectiveCardSources;
-      BattleInformation.Deck = deck;
-    }
-    else
-    {
-      selectiveCardSources = BattleInformation.CardSources;
-      deck = BattleInformation.Deck;
-
-      if (selectiveCardSources.Count > 0)
-      {
-        int random = UnityEngine.Random.Range(0, selectiveCardSources.Count);
-        CardSource source = selectiveCardSources[random];
-        selectiveCardSources.RemoveAt(random);
-        deck.Add(new Card(source));
-      }
-    }
+    Deck deck = BattleInformation.Deck;
 
     int hp;
     if (BattleInformation.FloorNumber == 1)
@@ -287,8 +268,48 @@ public class BattleSceneManager : MonoBehaviour
     AudioManager.Instance.PlaySe("battle_start", false);
     floorView.gameObject.SetActive(true);
     floorText.text = $"ステージ {BattleInformation.FloorNumber}";
+    if (ClearFloor - BattleInformation.FloorNumber == 1)
+    {
+      nokoriFloorText.text = $"ラストステージ";
+    }
+    else 
+    {
+      nokoriFloorText.text = $"残り {ClearFloor - BattleInformation.FloorNumber} ステージ";
+    }
     turnText.text = $"{BattleInformation.TurnSum} ターン経過";
-    await UniTask.Delay(3000, cancellationToken: token);
+
+    if (BattleInformation.FloorNumber == 1)
+    {
+      Deck deck = new Deck();
+
+      for (int i = 0; i < initialCardSources.Count; ++i)
+      {
+        deck.Add(new Card(initialCardSources[i]));
+      }
+
+      BattleInformation.CardSources = selectiveCardSources;
+      BattleInformation.Deck = deck;
+    }
+    else 
+    {
+      selectiveCardSources = BattleInformation.CardSources;
+      Deck deck = BattleInformation.Deck;
+
+      if (selectiveCardSources.Count > 0)
+      {
+        int random = UnityEngine.Random.Range(0, selectiveCardSources.Count);
+        CardSource source = selectiveCardSources[random];
+        selectiveCardSources.RemoveAt(random);
+        deck.Add(new Card(source));
+      }
+    }
+
+    foreach (Card card in BattleInformation.Deck.GetClone())
+    {
+      CardView cardView = Instantiate(cardViewPrefab, cardViewsReference.transform);
+      cardView.Initialize(card, this, null, false);
+    }
+    await UniTask.WaitUntil(() => Input.GetMouseButtonDown(0), cancellationToken: token);
     token.ThrowIfCancellationRequested();
     floorView.GetComponent<CanvasGroup>().DOFade(0f, 1f)
       .OnComplete(() => floorView.gameObject.SetActive(false))
@@ -297,7 +318,10 @@ public class BattleSceneManager : MonoBehaviour
 
   private async UniTask BattleMain(CancellationToken token)
   {
+    await UniTask.WaitUntil(() => !Input.GetMouseButton(0), cancellationToken: token);
+    token.ThrowIfCancellationRequested();
     await PlayFloorView(this.GetCancellationTokenOnDestroy());
+    token.ThrowIfCancellationRequested();
     BattleInitialize();
     while (true)
     {
@@ -357,6 +381,7 @@ public class BattleSceneManager : MonoBehaviour
         if (SpecialCardView != null)
         {
           CurrentBattle.DestroySpecialCard();
+          AudioManager.Instance.PlaySe("destroy", false);
           await SpecialCardView.Erase(true, token);
           token.ThrowIfCancellationRequested();
 
