@@ -1,3 +1,6 @@
+「アイショク - 犠牲がキーとなるカードゲーム」
+https://unityroom.com/games/aishoku_card
+
 自作ではないもの（使用させていただいたアセット）
 - 音楽（/Assets/AudioClips内のファイル）
   - DOVA-SYNDROME ◯奈落への巡行 written by のる ◯風のダンジョン written by ハヤシユウ
